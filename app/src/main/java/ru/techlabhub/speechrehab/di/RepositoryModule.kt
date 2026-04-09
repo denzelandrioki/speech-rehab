@@ -16,6 +16,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * Связывает интерфейсы домена ([WordRepository], [TrainingRepository], …) с реализациями в `data.repository`
+ * и [UserPreferencesRepositoryImpl] (DataStore).
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {

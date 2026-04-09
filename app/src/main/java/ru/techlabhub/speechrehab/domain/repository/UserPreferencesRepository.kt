@@ -3,6 +3,7 @@ package ru.techlabhub.speechrehab.domain.repository
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
 import kotlinx.coroutines.flow.Flow
 
+/** Настройки тренировки, собранные для use case и UI; хранятся в DataStore. */
 data class UserTrainingPreferences(
     val showWordHint: Boolean = true,
     val batchSize: Int = 12,
@@ -14,6 +15,7 @@ data class UserTrainingPreferences(
     val pexelsEnabled: Boolean = true,
 )
 
+/** Чтение и запись пользовательских настроек (реактивно через [preferencesFlow]). */
 interface UserPreferencesRepository {
     val preferencesFlow: Flow<UserTrainingPreferences>
 

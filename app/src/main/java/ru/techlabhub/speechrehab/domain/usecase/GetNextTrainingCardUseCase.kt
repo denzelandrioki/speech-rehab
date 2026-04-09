@@ -9,6 +9,20 @@ import ru.techlabhub.speechrehab.domain.repository.WordRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Сценарий выбора следующей карточки для тренировки.
+ *
+ * **Шаги:**
+ * 1. Убедиться, что словарь засеян ([WordRepository.ensureSeededIfEmpty]).
+ * 2. Получить пул слов по включённым категориям из настроек.
+ * 3. Загрузить из БД множество «сложных» слов (низкая точность при достаточном числе попыток) и «новых»
+ *    (мало попыток в целом) — для режимов [TrainingMode].
+ * 4. Отфильтровать пул через [CardWeightEngine.filterByMode], исключить предыдущее слово при возможности.
+ * 5. Назначить каждому кандидату вес: чем больше суммарных попыток при слабой серии верных — тем выше приоритет
+ *    (эвристика вместо отдельного счётчика ошибок).
+ * 6. Случайно выбрать слово с учётом весов ([CardWeightEngine.pickWeighted]).
+ * 7. Получить картинку: [ImageRepository.resolveCard] (кэш → ARASAAC → Pixabay → Pexels по настройкам).
+ */
 @Singleton
 class GetNextTrainingCardUseCase @Inject constructor(
     private val db: SpeechRehabDatabase,
@@ -55,7 +69,8 @@ class GetNextTrainingCardUseCase @Inject constructor(
         val weighted =
             candidates.map { w ->
                 val incorrectEstimate = counts[w.id]?.let { total ->
-                    // без отдельного хранения «числа ошибок» используем эвристику: чем больше попыток при низкой серии — тем выше вес
+                    // Отдельного поля «число ошибок» в БД нет: оцениваем как (все попытки − подряд идущие верные),
+                    // чтобы чаще показывать слова с нестабильным результатом.
                     (total - w.consecutiveCorrect).coerceAtLeast(0)
                 } ?: 0
                 val wgt =

@@ -34,6 +34,9 @@ import ru.techlabhub.speechrehab.domain.model.TrainingMode
 import ru.techlabhub.speechrehab.ui.common.categoryTitle
 import ru.techlabhub.speechrehab.ui.common.trainingModeLabel
 
+/**
+ * Настройки: подсказка слова, размер пакета, режим тренировки, включение источников картинок, фильтр категорий.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(

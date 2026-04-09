@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel экрана статистики: однократно и по запросу [refresh] загружает [StatisticsSnapshot]
+ * из [StatisticsRepository] (агрегаты SQL по попыткам, тренды за 7/14/30 дней).
+ */
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
     private val statisticsRepository: StatisticsRepository,

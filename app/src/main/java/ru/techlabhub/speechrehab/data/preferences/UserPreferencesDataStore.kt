@@ -1,7 +1,5 @@
 package ru.techlabhub.speechrehab.data.preferences
 
-// Ключи API: в `local.properties` добавьте `pixabay.api.key=...` и `pexels.api.key=...` (ARASAAC без ключа).
-
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -20,6 +18,12 @@ import javax.inject.Singleton
 
 private val Context.userPrefsDataStore by preferencesDataStore(name = "user_training_prefs")
 
+/**
+ * Реализация [UserPreferencesRepository] на DataStore Preferences.
+ *
+ * Ключи API для Pixabay/Pexels задаются в `local.properties` проекта ([BuildConfig]), не здесь.
+ * Здесь хранятся: подсказка слова, размер «пакета», режим тренировки, набор id категорий, флаги источников картинок.
+ */
 @Singleton
 class UserPreferencesRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,

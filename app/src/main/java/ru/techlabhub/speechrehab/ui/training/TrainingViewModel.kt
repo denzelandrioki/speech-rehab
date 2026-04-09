@@ -21,6 +21,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.NonCancellable
 import javax.inject.Inject
 
+/**
+ * Состояние экрана тренировки: индикатор загрузки, текущая [ImageCard], текст ошибки,
+ * блокировка кнопок после ответа до «Следующая», видимость письменной подсказки слова (из настроек).
+ */
 data class TrainingUiState(
     val loading: Boolean = false,
     val card: ImageCard? = null,
@@ -30,6 +34,16 @@ data class TrainingUiState(
     val showWordHint: Boolean = true,
 )
 
+/**
+ * ViewModel экрана тренировки.
+ *
+ * При создании открывает новую [TrainingRepository.startSession], затем подгружает карточки через
+ * [GetNextTrainingCardUseCase] с учётом [UserTrainingPreferences] (режим, категории, источники картинок).
+ * Запоминает [lastWordId], чтобы реже подряд показывать одно и то же слово (если в пуле больше одного).
+ *
+ * Ответы «верно»/«неверно» пишутся в БД и обновляют серии в таблице слов; при уничтожении ViewModel
+ * сессия закрывается в [onCleared] через [NonCancellable], чтобы запись не прервалась при уходе с экрана.
+ */
 @HiltViewModel
 class TrainingViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,

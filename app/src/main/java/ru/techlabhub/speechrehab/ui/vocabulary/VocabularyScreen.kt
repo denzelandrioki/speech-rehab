@@ -30,6 +30,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.ui.common.categoryTitle
 
+/**
+ * Список всех слов с русской подписью и локализованным названием категории; переключатель участия в тренировке.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyScreen(

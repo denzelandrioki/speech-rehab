@@ -6,12 +6,14 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import ru.techlabhub.speechrehab.data.local.entity.AnswerAttemptEntity
 
+/** Одна строка агрегата: день в «эпохе дней», число попыток, число верных. */
 data class DayAggregateRow(
     val dayEpoch: Long,
     val attempts: Int,
     val correct: Long,
 )
 
+/** Сводка по слову из JOIN с `words`; [wordText] уже с учётом русской подписи (SQL CASE). */
 data class WordAggregateRow(
     val wordId: Long,
     val wordText: String,
@@ -20,6 +22,7 @@ data class WordAggregateRow(
     val correct: Long,
 )
 
+/** Агрегат по категории для экрана статистики. */
 data class CategoryAggregateRow(
     val categoryId: Long,
     val categoryName: String,
@@ -27,6 +30,7 @@ data class CategoryAggregateRow(
     val correct: Long,
 )
 
+/** Запросы к таблице попыток: итоги, помесячные ряды, сложные/лёгкие слова, тренды по окну времени. */
 @Dao
 interface AnswerAttemptDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)

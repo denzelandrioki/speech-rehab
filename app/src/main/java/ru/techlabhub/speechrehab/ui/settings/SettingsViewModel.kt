@@ -17,6 +17,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel настроек тренировки.
+ *
+ * Поднимает список категорий из Room и текущие [UserTrainingPreferences] из DataStore (reactive `StateFlow`).
+ * Семантика выбора категорий: пустой [UserTrainingPreferences.enabledCategoryIds] означает «все категории включены»;
+ * при снятии последней галочки логика в [setCategoryEnabled] восстанавливает полный набор id, чтобы не остаться без слов.
+ */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val db: SpeechRehabDatabase,

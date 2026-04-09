@@ -11,6 +11,13 @@ import ru.techlabhub.speechrehab.ui.statistics.StatisticsScreen
 import ru.techlabhub.speechrehab.ui.training.TrainingScreen
 import ru.techlabhub.speechrehab.ui.vocabulary.VocabularyScreen
 
+/**
+ * Корневой навигационный граф приложения (один [androidx.navigation.NavController], плоский стек экранов).
+ *
+ * Стартовый экран — [Routes.Home]. Переходы на второстепенные экраны через `navigate`;
+ * возврат — [androidx.navigation.NavController.popBackStack].
+ * Глубокие ссылки и общий ViewModel между экранами здесь не используются (MVP).
+ */
 @Composable
 fun SpeechRehabNavHost(
     modifier: Modifier = Modifier,

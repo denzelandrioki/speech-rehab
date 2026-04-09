@@ -6,6 +6,7 @@ import ru.techlabhub.speechrehab.domain.model.TrendResult
 import ru.techlabhub.speechrehab.domain.model.WeeklyStats
 import ru.techlabhub.speechrehab.domain.model.WordRank
 
+/** Снимок данных для экрана статистики: одним объектом передаётся всё необходимое для отрисовки. */
 data class StatisticsSnapshot(
     val totalAttempts: Int,
     val totalCorrect: Int,
@@ -20,6 +21,7 @@ data class StatisticsSnapshot(
     val trend30: TrendResult,
 )
 
+/** Загрузка агрегированной статистики из БД (реализация считает SQL и тренды в домене). */
 interface StatisticsRepository {
     suspend fun loadSnapshot(): StatisticsSnapshot
 }

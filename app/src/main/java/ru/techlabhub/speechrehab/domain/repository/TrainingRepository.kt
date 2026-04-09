@@ -1,5 +1,6 @@
 package ru.techlabhub.speechrehab.domain.repository
 
+/** Сессия тренировки и запись ответов пользователя (и обновление серий по словам внутри реализации). */
 interface TrainingRepository {
     suspend fun startSession(): Long
 

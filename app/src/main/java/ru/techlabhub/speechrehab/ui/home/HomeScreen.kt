@@ -18,6 +18,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ru.techlabhub.speechrehab.R
 
+/**
+ * Главный экран: крупные кнопки для запуска тренировки и перехода к статистике, настройкам и словарю.
+ * Отдельного ViewModel нет — только колбэки, которые передаёт навигационный хост.
+ */
 @Composable
 fun HomeScreen(
     onStartTraining: () -> Unit,

@@ -6,7 +6,8 @@ import timber.log.Timber
 import java.io.IOException
 
 /**
- * Простой retry для нестабильной сети (без бесконечного цикла).
+ * OkHttp [Interceptor]: при неуспешном HTTP (5xx) или IO-исключении повторяет запрос до [maxRetries] раз.
+ * Клиентские ошибки 4xx не ретраятся (кроме общей логики — см. код).
  */
 class RetryInterceptor(
     private val maxRetries: Int = 2,

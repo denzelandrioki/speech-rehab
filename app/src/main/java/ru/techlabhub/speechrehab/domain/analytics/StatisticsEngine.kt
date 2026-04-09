@@ -5,12 +5,23 @@ import ru.techlabhub.speechrehab.domain.model.TrendResult
 import kotlin.math.abs
 
 /**
- * Чистые функции для тестов: тренд по упорядоченному списку результатов (true=верно).
+ * Чистые функции аналитики для экрана статистики и юнит-тестов.
+ *
+ * - [accuracyPercent] — процент верных ответов.
+ * - [trendFromOrderedResults] — сравнивает точность первой и второй половины хронологии попыток
+ *   (оценка «улучшение / ухудшение / стабильно»).
+ * - [weeklyBucketsFromDaily] — складывает дневные агрегаты в недельные (неделя с понедельника).
  */
 object StatisticsEngine {
+    /** Доля верных ответов в процентах; при нуле попыток возвращает 0. */
     fun accuracyPercent(correct: Int, attempts: Int): Float =
         if (attempts <= 0) 0f else (correct * 100f) / attempts
 
+    /**
+     * @param orderedResults упорядоченные по времени результаты (true = верно).
+     * @param windowDays подпись для UI (сколько дней окна; фактически используется длина списка).
+     * @param stableEpsilonPercent порог разницы точности половин, ниже которого считаем «стабильно».
+     */
     fun trendFromOrderedResults(
         orderedResults: List<Boolean>,
         windowDays: Int,

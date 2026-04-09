@@ -1,8 +1,11 @@
 package ru.techlabhub.speechrehab.data.local.seed
 
 /**
- * Предустановленный словарь: [WordSeed.textEn] — для поиска картинок (API),
- * [WordSeed.textRu] — подпись для пользователя.
+ * Предустановленный словарь для первого запуска и сидирования Room.
+ *
+ * - [WordSeed.textEn] — запрос к ARASAAC/Pixabay/Pexels; [WordSeed.textRu] — подпись в UI и колонка `displayText` в БД.
+ * - Внешних «свободных» списков нет: только этот контролируемый набор категорий и слов.
+ * - [englishToRussianMap] используется при миграции БД с версии 1 на 2 (колонка русской подписи).
  */
 object VocabularyCatalog {
     data class WordSeed(val textEn: String, val textRu: String)

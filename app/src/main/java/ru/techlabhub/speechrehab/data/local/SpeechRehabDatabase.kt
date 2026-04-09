@@ -16,6 +16,11 @@ import ru.techlabhub.speechrehab.data.local.entity.CategoryEntity
 import ru.techlabhub.speechrehab.data.local.entity.TrainingSessionEntity
 import ru.techlabhub.speechrehab.data.local.entity.WordEntity
 
+/**
+ * Локальная база Room: категории, слова, кэш путей картинок, сессии тренировок, попытки ответов.
+ *
+ * Версия 2: колонка [WordEntity.displayText] для русской подписи (миграция [MIGRATION_1_2]).
+ */
 @Database(
     entities = [
         CategoryEntity::class,
@@ -35,6 +40,7 @@ abstract class SpeechRehabDatabase : RoomDatabase() {
     abstract fun answerAttemptDao(): AnswerAttemptDao
 
     companion object {
+        /** Добавление русских подписей к существующим строкам словаря без потери данных. */
         val MIGRATION_1_2: Migration =
             object : Migration(1, 2) {
                 override fun migrate(db: SupportSQLiteDatabase) {

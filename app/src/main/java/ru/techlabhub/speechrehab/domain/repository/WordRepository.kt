@@ -3,6 +3,7 @@ package ru.techlabhub.speechrehab.domain.repository
 import ru.techlabhub.speechrehab.domain.model.WordItem
 import kotlinx.coroutines.flow.Flow
 
+/** Доступ к словам и категориям в Room: сидирование, наблюдение списков, выбор пула для тренировки. */
 interface WordRepository {
     suspend fun ensureSeededIfEmpty()
 

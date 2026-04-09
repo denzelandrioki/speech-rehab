@@ -36,6 +36,9 @@ private val DarkColors =
         onSurface = Color(0xFFEAEAEA),
     )
 
+/**
+ * Корневая тема Material 3: светлая/тёмная схема от [isSystemInDarkTheme], типографика [SpeechRehabTypography].
+ */
 @Composable
 fun SpeechRehabTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

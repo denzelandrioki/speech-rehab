@@ -7,6 +7,9 @@ import androidx.room.Query
 import ru.techlabhub.speechrehab.data.local.entity.WordEntity
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Проекция строки из JOIN `words` + `categories` для списков и маппера [ru.techlabhub.speechrehab.data.mapper.toWordItem].
+ */
 data class WordWithCategoryRow(
     val id: Long,
     val text: String,
@@ -19,6 +22,7 @@ data class WordWithCategoryRow(
     val categoryName: String,
 )
 
+/** Запросы к таблице `words`: наблюдение списков, выборка для тренировки, обновление флагов и серий. */
 @Dao
 interface WordDao {
     @Query("SELECT COUNT(*) FROM words")

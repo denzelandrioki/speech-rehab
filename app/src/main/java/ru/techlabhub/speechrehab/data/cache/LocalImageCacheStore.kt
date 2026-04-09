@@ -16,7 +16,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Сохраняет байты изображения в filesDir, чтобы не hotlink'ать и работать офлайн.
+ * Файловый кэш изображений под `filesDir/image_cache/`.
+ *
+ * Имя файла: id слова + хэш URL, чтобы при смене картинки для того же слова не залипать на старом файле.
+ * [downloadToFile] — несколько попыток с задержкой при сетевых сбоях; используется отдельный OkHttp [ImageDownloadClient].
  */
 @Singleton
 class LocalImageCacheStore @Inject constructor(

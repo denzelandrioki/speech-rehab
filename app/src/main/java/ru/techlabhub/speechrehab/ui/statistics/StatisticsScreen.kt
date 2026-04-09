@@ -35,6 +35,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+/**
+ * Экран статистики: общая точность, графики по дням/неделям, сложные и лёгкие слова, прогресс по категориям, тренды.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(

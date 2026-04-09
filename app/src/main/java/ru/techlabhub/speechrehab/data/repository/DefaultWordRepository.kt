@@ -12,6 +12,10 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Слова и категории: первичное заполнение из [VocabularyCatalog], наблюдение за списками через Flow,
+ * выбор включённых слов для тренировки с учётом «пустой набор id = все категории» в вызывающем коде.
+ */
 @Singleton
 class DefaultWordRepository @Inject constructor(
     db: SpeechRehabDatabase,

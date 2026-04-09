@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
 
+/** Локализованная подпись режима тренировки для чипов/настроек. */
 @Composable
 fun trainingModeLabel(mode: TrainingMode): String =
     when (mode) {

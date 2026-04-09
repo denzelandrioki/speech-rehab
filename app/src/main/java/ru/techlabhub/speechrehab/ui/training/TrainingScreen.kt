@@ -37,6 +37,10 @@ import coil.request.ImageRequest
 import ru.techlabhub.speechrehab.R
 import java.io.File
 
+/**
+ * Экран тренировки: изображение (файл или URL), подпись слова при включённой подсказке,
+ * кнопки «верно» / «неверно» / «следующая». Состояние — [TrainingViewModel.ui].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingScreen(

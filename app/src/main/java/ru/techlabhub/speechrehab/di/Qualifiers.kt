@@ -2,6 +2,10 @@ package ru.techlabhub.speechrehab.di
 
 import javax.inject.Qualifier
 
+/**
+ * Квалификаторы Dagger/Hilt: несколько экземпляров одного типа ([Retrofit], [okhttp3.OkHttpClient])
+ * различаются аннотациями при внедрении.
+ */
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ArasaacRetrofit
@@ -14,6 +18,7 @@ annotation class PixabayRetrofit
 @Retention(AnnotationRetention.BINARY)
 annotation class PexelsRetrofit
 
+/** Отдельный [okhttp3.OkHttpClient] без Retrofit — только скачивание байтов изображений. */
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ImageDownloadClient

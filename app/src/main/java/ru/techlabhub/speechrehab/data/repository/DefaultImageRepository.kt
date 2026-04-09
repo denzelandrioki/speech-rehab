@@ -19,6 +19,13 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Реализация загрузки иллюстрации к слову.
+ *
+ * Порядок: локальный кэш в Room + файл на диске → поиск URL (ARASAAC по английскому [WordItem.text],
+ * затем Pixabay/Pexels при включённых флагах и непустых ключах [BuildConfig]) → скачивание в [LocalImageCacheStore].
+ * Если файл не удалось сохранить, в карточке остаётся прямой URL (показ через Coil по сети).
+ */
 @Singleton
 class DefaultImageRepository @Inject constructor(
     private val db: SpeechRehabDatabase,

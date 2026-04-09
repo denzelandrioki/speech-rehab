@@ -10,6 +10,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * Предоставляет singleton [SpeechRehabDatabase] (Room) с именем файла `speech_rehab.db` и миграцией [SpeechRehabDatabase.MIGRATION_1_2].
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {

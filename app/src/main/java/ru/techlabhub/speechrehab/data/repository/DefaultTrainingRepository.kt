@@ -8,6 +8,10 @@ import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Запись тренировочных сессий и ответов в одной транзакции Room: попытка + обновление серий
+ * [WordEntity.consecutiveCorrect] / [WordEntity.consecutiveIncorrect].
+ */
 @Singleton
 class DefaultTrainingRepository @Inject constructor(
     private val db: SpeechRehabDatabase,

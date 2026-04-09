@@ -19,6 +19,10 @@ import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
+/**
+ * Hilt-модуль сети: JSON ([kotlinx.serialization]), общий OkHttp для Retrofit, отдельный клиент для скачивания
+ * изображений (длинные таймауты), три экземпляра [Retrofit] с разными base URL (Arasaac, Pixabay, Pexels).
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -44,7 +48,7 @@ object NetworkModule {
                     }
             }
         return OkHttpClient.Builder()
-            // На эмуляторе HTTP/2 к CDN иногда даёт reset/timeout — только HTTP/1.1 стабильнее.
+            // На эмуляторе HTTP/2 к CDN иногда даёт reset/timeout; принудительно HTTP/1.1 стабильнее.
             .protocols(listOf(Protocol.HTTP_1_1))
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
@@ -54,7 +58,10 @@ object NetworkModule {
             .build()
     }
 
-    /** Длинные ответы при скачивании PNG; не смешиваем с Retrofit call timeout. */
+    /**
+     * Отдельный OkHttp только для загрузки байтов картинок (большие тело ответа, медленный CDN).
+     * Таймауты шире, чем у клиента для Retrofit, чтобы не обрывать долгие загрузки.
+     */
     @Provides
     @Singleton
     @ImageDownloadClient

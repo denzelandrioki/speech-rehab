@@ -13,6 +13,10 @@ import ru.techlabhub.speechrehab.domain.repository.StatisticsSnapshot
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Собирает [StatisticsSnapshot]: общие итоги, помесячные/понедельные ряды, сложные/лёгкие слова, по категориям,
+ * тренды за 7/14/30 дней через хронологию булевых результатов в окне по времени.
+ */
 @Singleton
 class DefaultStatisticsRepository @Inject constructor(
     db: SpeechRehabDatabase,

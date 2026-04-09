@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel экрана словаря: полный список слов с категориями, переключатель «участвует в тренировке».
+ * При старте вызывает [WordRepository.ensureSeededIfEmpty], чтобы пустая БД заполнилась каталогом.
+ */
 @HiltViewModel
 class VocabularyViewModel @Inject constructor(
     private val wordRepository: WordRepository,
