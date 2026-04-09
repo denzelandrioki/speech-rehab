@@ -4,21 +4,20 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ru.techlabhub.speechrehab.R
+import ru.techlabhub.speechrehab.di.ApplicationScope
 import ru.techlabhub.speechrehab.domain.model.ImageCard
 import ru.techlabhub.speechrehab.domain.repository.TrainingRepository
 import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.usecase.GetNextTrainingCardUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.NonCancellable
 import javax.inject.Inject
 
 /**
@@ -38,15 +37,18 @@ data class TrainingUiState(
  * ViewModel экрана тренировки.
  *
  * При создании открывает новую [TrainingRepository.startSession], затем подгружает карточки через
- * [GetNextTrainingCardUseCase] с учётом [UserTrainingPreferences] (режим, категории, источники картинок).
+ * [GetNextTrainingCardUseCase] с учётом [UserPreferencesRepository] (режим, категории, источники картинок).
  * Запоминает [lastWordId], чтобы реже подряд показывать одно и то же слово (если в пуле больше одного).
  *
- * Ответы «верно»/«неверно» пишутся в БД и обновляют серии в таблице слов; при уничтожении ViewModel
- * сессия закрывается в [onCleared] через [NonCancellable], чтобы запись не прервалась при уходе с экрана.
+ * Закрытие сессии при уходе с экрана выполняется в [onCleared] через [applicationScope]: неблокирующий
+ * [kotlinx.coroutines.launch] на IO-потоке. Это убирает [kotlinx.coroutines.runBlocking] с главного потока.
+ * При аварийном завершении процесса запись `endSession` теоретически может не успеть (как и при любом async);
+ * для MVP это приемлемый компромисс.
  */
 @HiltViewModel
 class TrainingViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
+    @ApplicationScope private val applicationScope: CoroutineScope,
     private val getNextTrainingCard: GetNextTrainingCardUseCase,
     private val trainingRepository: TrainingRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
@@ -130,10 +132,8 @@ class TrainingViewModel @Inject constructor(
     override fun onCleared() {
         val id = sessionId
         if (id != null) {
-            runBlocking {
-                withContext(NonCancellable) {
-                    trainingRepository.endSession(id, assistantNote = null)
-                }
+            applicationScope.launch {
+                trainingRepository.endSession(id, assistantNote = null)
             }
         }
         super.onCleared()

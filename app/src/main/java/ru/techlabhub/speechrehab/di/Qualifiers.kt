@@ -22,3 +22,8 @@ annotation class PexelsRetrofit
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ImageDownloadClient
+
+/** [kotlinx.coroutines.CoroutineScope] приложения (не отменяется при `onCleared` у ViewModel). */
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ApplicationScope

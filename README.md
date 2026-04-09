@@ -28,27 +28,41 @@ Android-приложение для тренировки узнавания сл
 - **JDK 17** (как в `compileOptions` / `kotlinOptions` модуля `app`).
 - **Android SDK** с установленным API 35 для сборки.
 
-## Клонирование и ключи API
+## Клонирование и запуск
 
-1. Клонируйте репозиторий и откройте корень проекта в Android Studio.
+1. Клонируйте репозиторий и откройте **корень** проекта в Android Studio (тип проекта — Gradle).
 
-2. В корне создайте или отредактируйте файл **`local.properties`** (он в `.gitignore` и в репозиторий не попадает). Добавьте пути SDK при необходимости и **ключи** для стоковых фото (для полноценной работы Pixabay и Pexels):
+2. В корне должен лежать **Gradle Wrapper** (`gradlew` / `gradlew.bat`). Сборка из терминала в корне:
 
-   ```properties
-   sdk.dir=C\:\\Users\\<user>\\AppData\\Local\\Android\\Sdk
+   ```bash
+   # Windows (PowerShell или cmd)
+   .\gradlew.bat assembleDebug
 
-   pixabay.api.key=ВАШ_КЛЮЧ_PIXABAY
-   pexels.api.key=ВАШ_КЛЮЧ_PEXELS
+   # Linux / macOS
+   chmod +x gradlew
+   ./gradlew assembleDebug
    ```
 
-   Ключи подставляются в `BuildConfig` при сборке. **ARASAAC** (пиктограммы) для базового поиска ключ не требует.
+3. Файл **`local.properties`** создайте в корне (Android Studio обычно создаёт его сам) и при необходимости укажите `sdk.dir=...`. Файл в `.gitignore` — в git не коммитится.
 
-3. Синхронизируйте Gradle (**File → Sync Project with Gradle Files**) и соберите проект (**Build → Make Project**).
+## Ключи API (Pixabay / Pexels)
+
+В **`local.properties`** можно добавить:
+
+```properties
+pixabay.api.key=ВАШ_КЛЮЧ_PIXABAY
+pexels.api.key=ВАШ_КЛЮЧ_PEXELS
+```
+
+Ключи попадают в `BuildConfig` при сборке. **Без ключей** приложение собирается и запускается: для картинок остаются **ARASAAC** (без ключа) и уже **закэшированные** файлы; Pixabay/Pexels в этом случае не используются. **ARASAAC** — основной бесплатный источник пиктограмм для тренировки.
+
+После изменения ключей выполните **Sync Project with Gradle Files**.
 
 ## Сборка
 
-- Отладочный APK: задача **assembleDebug** (Gradle) или кнопка Run с выбранным устройством/эмулятором.
-- Релиз: **assembleRelease** (при необходимости настройте подпись в `app` и включите minify в `build.gradle.kts`).
+- **Debug:** `./gradlew assembleDebug` (или **Run** в Android Studio).
+- **Unit-тесты:** `./gradlew test`
+- **Релиз:** `./gradlew assembleRelease` (настройте подпись и храните keystore вне репозитория).
 
 ## Архитектура (кратко)
 
@@ -65,11 +79,15 @@ Android-приложение для тренировки узнавания сл
 
 ## Тесты
 
-Юнит-тесты домена лежат в `app/src/test/java` (например, `CardWeightEngineTest`, `StatisticsEngineTest`). Запуск из Android Studio или `./gradlew test`.
+Юнит-тесты домена: `app/src/test/java` (например, `CardWeightEngineTest`, `StatisticsEngineTest`). Запуск: `./gradlew test`.
+
+## CI
+
+В репозитории есть workflow **GitHub Actions** (`.github/workflows/ci.yml`): сборка `assembleDebug` и `test` на push/PR в ветки `main` и `master`.
 
 ## Лицензия
 
-Укажите лицензию по усмотрению автора; в репозитории файл лицензии может быть добавлен отдельно.
+[MIT](LICENSE)
 
 ## Автор и ссылки
 
