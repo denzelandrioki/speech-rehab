@@ -1,73 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Речевая реабилитация</string>
+    <string name="app_name">Speech rehab</string>
 
-    <!-- Главный экран -->
-    <string name="home_title">Речевая реабилитация</string>
-    <string name="home_subtitle">Крупные кнопки. Минимум шагов.</string>
-    <string name="home_start_training">Начать тренировку</string>
-    <string name="home_statistics">Статистика</string>
-    <string name="home_settings">Настройки</string>
-    <string name="home_vocabulary">Словарь</string>
+    <string name="home_title">Speech rehabilitation</string>
+    <string name="home_subtitle">Large buttons. Few steps.</string>
+    <string name="home_start_training">Start training</string>
+    <string name="home_statistics">Statistics</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_vocabulary">Vocabulary</string>
 
-    <!-- Общее -->
-    <string name="cd_back">Назад</string>
+    <string name="cd_back">Back</string>
 
-    <!-- Тренировка -->
-    <string name="screen_training">Тренировка</string>
-    <string name="training_loading">Загрузка следующей карточки…</string>
-    <string name="training_retry">Повторить</string>
-    <string name="training_correct">Правильно</string>
-    <string name="training_incorrect">Неправильно</string>
-    <string name="training_next">Следующая</string>
-    <string name="training_error_no_card">Нет карточки (проверьте сеть, ключи API и словарь)</string>
-    <string name="training_error_load">Ошибка загрузки</string>
+    <string name="screen_training">Training</string>
+    <string name="training_loading">Loading next card…</string>
+    <string name="training_retry">Retry</string>
+    <string name="training_correct">Correct</string>
+    <string name="training_incorrect">Incorrect</string>
+    <string name="training_next">Next</string>
+    <string name="training_error_no_words">No words available (check categories and vocabulary).</string>
+    <string name="training_error_load">Load error</string>
+    <string name="training_image_unavailable_hint">Image unavailable offline. You can enable online download in settings or add bundled pictures.</string>
 
-    <!-- Статистика -->
-    <string name="screen_statistics">Статистика</string>
-    <string name="stats_no_data">Пока нет данных.</string>
-    <string name="stats_overall_accuracy">Общая точность: %1$.1f%%</string>
-    <string name="stats_attempts">Попыток: %1$d (верно %2$d)</string>
-    <string name="stats_last_days">Последние дни (точность)</string>
-    <string name="stats_trends">Динамика</string>
-    <string name="stats_trend_window">За %1$d дн.</string>
-    <string name="stats_hardest">Сложные слова</string>
-    <string name="stats_easiest">Лёгкие слова</string>
-    <string name="stats_categories">Категории</string>
-    <string name="stats_word_line">%1$s: %2$.0f%% (%3$d попыток)</string>
-    <string name="stats_day_fallback">день %1$d</string>
-    <string name="trend_improving">улучшается</string>
-    <string name="trend_declining">ухудшается</string>
-    <string name="trend_stable">стабильно</string>
+    <string name="screen_statistics">Statistics</string>
+    <string name="stats_no_data">No data yet.</string>
+    <string name="stats_overall_accuracy">Overall accuracy: %1$.1f%%</string>
+    <string name="stats_attempts">Attempts: %1$d (correct %2$d)</string>
+    <string name="stats_last_days">Last days (accuracy)</string>
+    <string name="stats_trends">Trends</string>
+    <string name="stats_trend_window">Last %1$d days</string>
+    <string name="stats_hardest">Hardest words</string>
+    <string name="stats_easiest">Easiest words</string>
+    <string name="stats_categories">Categories</string>
+    <string name="stats_word_line">%1$s: %2$.0f%% (%3$d attempts)</string>
+    <string name="stats_day_fallback">day %1$d</string>
+    <string name="trend_improving">improving</string>
+    <string name="trend_declining">declining</string>
+    <string name="trend_stable">stable</string>
     <string name="trend_line">%1$s: %2$s (%3$.1f%% → %4$.1f%%)</string>
 
-    <!-- Настройки -->
-    <string name="screen_settings">Настройки</string>
-    <string name="settings_word_hint_section">Подсказка на экране тренировки</string>
-    <string name="settings_show_written_word">Показывать слово текстом</string>
-    <string name="settings_batch_section">Размер пачки (план сессии, в разработке)</string>
-    <string name="settings_batch_cards">%1$d карточек</string>
-    <string name="settings_training_mix">Режим подбора карточек</string>
-    <string name="mode_random">Случайный</string>
-    <string name="mode_by_category">По категории</string>
-    <string name="mode_hard_words">Сложные слова</string>
-    <string name="mode_new_only">Только новые</string>
-    <string name="mode_mixed">Смешанный</string>
-    <string name="settings_sources_section">Источники картинок (порядок: ARASAAC → Pixabay → Pexels)</string>
+    <string name="screen_settings">Settings</string>
+    <string name="settings_word_hint_section">Training screen</string>
+    <string name="settings_show_written_word">Show written word</string>
+    <string name="settings_batch_section">Batch size (session planning, WIP)</string>
+    <string name="settings_batch_cards">%1$d cards</string>
+    <string name="settings_training_mix">Card selection mode</string>
+    <string name="mode_random">Random</string>
+    <string name="mode_by_category">By category</string>
+    <string name="mode_hard_words">Hard words</string>
+    <string name="mode_new_only">New only</string>
+    <string name="mode_mixed">Mixed</string>
+    <string name="settings_sources_section">Image sources (when online fetch is on: ARASAAC → Pixabay → Pexels)</string>
     <string name="source_arasaac">ARASAAC</string>
-    <string name="source_pixabay">Pixabay (нужен ключ API)</string>
-    <string name="source_pexels">Pexels (нужен ключ API)</string>
-    <string name="settings_categories_section">Категории (пусто = все включены)</string>
+    <string name="source_pixabay">Pixabay (API key required)</string>
+    <string name="source_pexels">Pexels (API key required)</string>
+    <string name="settings_categories_section">Categories (empty = all enabled)</string>
 
-    <!-- Словарь -->
-    <string name="screen_vocabulary">Словарь</string>
+    <string name="settings_app_language_section">App language</string>
+    <string name="lang_system">System</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_english">English</string>
 
-    <!-- Названия категорий в БД (англ.) → отображение -->
-    <string name="category_furniture">Мебель</string>
-    <string name="category_home">Дом</string>
-    <string name="category_nature">Природа</string>
-    <string name="category_animals">Животные</string>
-    <string name="category_food">Еда</string>
-    <string name="category_transport">Транспорт</string>
-    <string name="category_household">Бытовые предметы</string>
+    <string name="settings_card_text_section">Card text language</string>
+    <string name="card_text_russian">Russian</string>
+    <string name="card_text_english">English</string>
+    <string name="card_text_both">Both</string>
+    <string name="card_text_none">Hidden</string>
+
+    <string name="settings_online_images_section">Online image download</string>
+    <string name="online_fetch_enabled">Allowed</string>
+    <string name="online_fetch_disabled">Disabled (offline only)</string>
+    <string name="online_fetch_wifi_only">Wi‑Fi only</string>
+    <string name="online_fetch_wifi_hint">Uses Wi‑Fi connection only for remote images.</string>
+
+    <string name="settings_preferred_image_section">Local image priority</string>
+    <string name="pref_img_bundled_first">Bundled first, then cache</string>
+    <string name="pref_img_cached_first">Cache first, then bundled</string>
+    <string name="pref_img_local_only">Local only (no download)</string>
+    <string name="pref_img_local_then_remote">Local first, then online</string>
+
+    <string name="screen_vocabulary">Vocabulary</string>
+
+    <string name="category_furniture">Furniture</string>
+    <string name="category_home">Home</string>
+    <string name="category_nature">Nature</string>
+    <string name="category_animals">Animals</string>
+    <string name="category_food">Food</string>
+    <string name="category_transport">Transport</string>
+    <string name="category_household">Household items</string>
 </resources>

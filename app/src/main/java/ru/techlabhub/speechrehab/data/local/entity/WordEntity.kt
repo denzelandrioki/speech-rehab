@@ -20,13 +20,13 @@ import androidx.room.PrimaryKey
 data class WordEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val text: String,
-    /** Русская подпись; пустая строка — в UI используется [text]. */
-    val displayText: String = "",
+    val displayTextRu: String = "",
+    val displayTextEn: String = "",
+    /** Относительный путь в assets, например `bundled/table.png`; пусто — нет встроенной картинки. */
+    val bundledAssetName: String = "",
     val categoryId: Long,
     val enabled: Boolean = true,
     val isCustom: Boolean = false,
-    /** Серия подряд правильных ответов (для веса; обновляется при записи попытки). */
     val consecutiveCorrect: Int = 0,
-    /** Серия подряд неправильных ответов. */
     val consecutiveIncorrect: Int = 0,
 )

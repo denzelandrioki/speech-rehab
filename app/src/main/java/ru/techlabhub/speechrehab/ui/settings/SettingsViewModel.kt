@@ -4,8 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ru.techlabhub.speechrehab.data.local.SpeechRehabDatabase
 import ru.techlabhub.speechrehab.data.mapper.toCategory
+import ru.techlabhub.speechrehab.domain.model.AppLanguage
 import ru.techlabhub.speechrehab.domain.model.Category
+import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
+import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
+import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
 import ru.techlabhub.speechrehab.domain.repository.WordRepository
@@ -65,6 +69,22 @@ class SettingsViewModel @Inject constructor(
         pexels: Boolean,
     ) {
         viewModelScope.launch { prefs.setSourceEnabled(arasaac, pixabay, pexels) }
+    }
+
+    fun setAppLanguage(language: AppLanguage) {
+        viewModelScope.launch { prefs.setAppLanguage(language) }
+    }
+
+    fun setTrainingTextLanguage(mode: TrainingTextLanguage) {
+        viewModelScope.launch { prefs.setTrainingTextLanguage(mode) }
+    }
+
+    fun setOnlineImageFetchingMode(mode: OnlineImageFetchingMode) {
+        viewModelScope.launch { prefs.setOnlineImageFetchingMode(mode) }
+    }
+
+    fun setPreferredImageMode(mode: PreferredImageMode) {
+        viewModelScope.launch { prefs.setPreferredImageMode(mode) }
     }
 
     fun setCategoryEnabled(

@@ -30,12 +30,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ru.techlabhub.speechrehab.R
+import ru.techlabhub.speechrehab.domain.model.AppLanguage
+import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
+import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
+import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import ru.techlabhub.speechrehab.ui.common.categoryTitle
 import ru.techlabhub.speechrehab.ui.common.trainingModeLabel
 
 /**
- * Настройки: подсказка слова, размер пакета, режим тренировки, включение источников картинок, фильтр категорий.
+ * Настройки: язык UI, текст карточки, подсказка, пакет, режим, источники и приоритет картинок, категории.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,6 +72,26 @@ fun SettingsScreen(
                     .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            Text(stringResource(R.string.settings_app_language_section), style = MaterialTheme.typography.titleLarge)
+            AppLanguage.values().forEach { lang ->
+                FilterChip(
+                    selected = prefs.appLanguage == lang,
+                    onClick = { vm.setAppLanguage(lang) },
+                    label = { Text(appLanguageLabel(lang)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Text(stringResource(R.string.settings_card_text_section), style = MaterialTheme.typography.titleLarge)
+            TrainingTextLanguage.values().forEach { mode ->
+                FilterChip(
+                    selected = prefs.trainingTextLanguage == mode,
+                    onClick = { vm.setTrainingTextLanguage(mode) },
+                    label = { Text(trainingTextLanguageLabel(mode)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
             Text(stringResource(R.string.settings_word_hint_section), style = MaterialTheme.typography.titleLarge)
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -96,6 +120,34 @@ fun SettingsScreen(
                     selected = prefs.trainingMode == mode,
                     onClick = { vm.setMode(mode) },
                     label = { Text(trainingModeLabel(mode)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Text(stringResource(R.string.settings_preferred_image_section), style = MaterialTheme.typography.titleLarge)
+            PreferredImageMode.values().forEach { mode ->
+                FilterChip(
+                    selected = prefs.preferredImageMode == mode,
+                    onClick = { vm.setPreferredImageMode(mode) },
+                    label = { Text(preferredImageModeLabel(mode)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Text(stringResource(R.string.settings_online_images_section), style = MaterialTheme.typography.titleLarge)
+            OnlineImageFetchingMode.values().forEach { mode ->
+                FilterChip(
+                    selected = prefs.onlineImageFetchingMode == mode,
+                    onClick = { vm.setOnlineImageFetchingMode(mode) },
+                    label = { Text(onlineFetchLabel(mode)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (prefs.onlineImageFetchingMode == OnlineImageFetchingMode.WIFI_ONLY) {
+                Text(
+                    stringResource(R.string.online_fetch_wifi_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -126,6 +178,40 @@ fun SettingsScreen(
         }
     }
 }
+
+@Composable
+private fun appLanguageLabel(l: AppLanguage): String =
+    when (l) {
+        AppLanguage.SYSTEM -> stringResource(R.string.lang_system)
+        AppLanguage.RUSSIAN -> stringResource(R.string.lang_russian)
+        AppLanguage.ENGLISH -> stringResource(R.string.lang_english)
+    }
+
+@Composable
+private fun trainingTextLanguageLabel(mode: TrainingTextLanguage): String =
+    when (mode) {
+        TrainingTextLanguage.RUSSIAN -> stringResource(R.string.card_text_russian)
+        TrainingTextLanguage.ENGLISH -> stringResource(R.string.card_text_english)
+        TrainingTextLanguage.BOTH -> stringResource(R.string.card_text_both)
+        TrainingTextLanguage.NONE -> stringResource(R.string.card_text_none)
+    }
+
+@Composable
+private fun preferredImageModeLabel(mode: PreferredImageMode): String =
+    when (mode) {
+        PreferredImageMode.BUNDLED_FIRST -> stringResource(R.string.pref_img_bundled_first)
+        PreferredImageMode.CACHED_FIRST -> stringResource(R.string.pref_img_cached_first)
+        PreferredImageMode.LOCAL_ONLY -> stringResource(R.string.pref_img_local_only)
+        PreferredImageMode.LOCAL_THEN_REMOTE -> stringResource(R.string.pref_img_local_then_remote)
+    }
+
+@Composable
+private fun onlineFetchLabel(mode: OnlineImageFetchingMode): String =
+    when (mode) {
+        OnlineImageFetchingMode.ENABLED -> stringResource(R.string.online_fetch_enabled)
+        OnlineImageFetchingMode.DISABLED -> stringResource(R.string.online_fetch_disabled)
+        OnlineImageFetchingMode.WIFI_ONLY -> stringResource(R.string.online_fetch_wifi_only)
+    }
 
 @Composable
 private fun SourceRow(

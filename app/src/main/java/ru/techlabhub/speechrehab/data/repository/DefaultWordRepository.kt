@@ -41,7 +41,9 @@ class DefaultWordRepository @Inject constructor(
                     words.add(
                         WordEntity(
                             text = w.textEn,
-                            displayText = w.textRu,
+                            displayTextRu = w.textRu,
+                            displayTextEn = w.textEn,
+                            bundledAssetName = "",
                             categoryId = cid,
                             enabled = true,
                             isCustom = false,

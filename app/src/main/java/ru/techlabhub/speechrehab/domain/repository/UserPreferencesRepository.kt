@@ -1,9 +1,13 @@
 package ru.techlabhub.speechrehab.domain.repository
 
+import ru.techlabhub.speechrehab.domain.model.AppLanguage
+import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
+import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
+import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import kotlinx.coroutines.flow.Flow
 
-/** Настройки тренировки, собранные для use case и UI; хранятся в DataStore. */
+/** Настройки тренировки и отображения, собранные для use case и UI; хранятся в DataStore. */
 data class UserTrainingPreferences(
     val showWordHint: Boolean = true,
     val batchSize: Int = 12,
@@ -13,6 +17,14 @@ data class UserTrainingPreferences(
     val arasaacEnabled: Boolean = true,
     val pixabayEnabled: Boolean = true,
     val pexelsEnabled: Boolean = true,
+    /** Язык интерфейса (независимо от подписи карточки). */
+    val appLanguage: AppLanguage = AppLanguage.SYSTEM,
+    /** Как показывать текст на карточке тренировки. */
+    val trainingTextLanguage: TrainingTextLanguage = TrainingTextLanguage.RUSSIAN,
+    /** Разрешение сетевой подгрузки изображений (после локальных источников). */
+    val onlineImageFetchingMode: OnlineImageFetchingMode = OnlineImageFetchingMode.ENABLED,
+    /** Порядок локальных источников и политика «только локально». */
+    val preferredImageMode: PreferredImageMode = PreferredImageMode.LOCAL_THEN_REMOTE,
 )
 
 /** Чтение и запись пользовательских настроек (реактивно через [preferencesFlow]). */
@@ -28,4 +40,12 @@ interface UserPreferencesRepository {
     suspend fun setEnabledCategoryIds(ids: Set<Long>)
 
     suspend fun setSourceEnabled(sourceArasaac: Boolean, sourcePixabay: Boolean, sourcePexels: Boolean)
+
+    suspend fun setAppLanguage(language: AppLanguage)
+
+    suspend fun setTrainingTextLanguage(mode: TrainingTextLanguage)
+
+    suspend fun setOnlineImageFetchingMode(mode: OnlineImageFetchingMode)
+
+    suspend fun setPreferredImageMode(mode: PreferredImageMode)
 }

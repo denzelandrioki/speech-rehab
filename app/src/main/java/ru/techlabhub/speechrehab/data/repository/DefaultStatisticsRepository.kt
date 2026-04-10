@@ -94,7 +94,9 @@ class DefaultStatisticsRepository @Inject constructor(
         val acc = StatisticsEngine.accuracyPercent(correct.toInt(), attempts)
         return WordRank(
             wordId = wordId,
-            text = wordText,
+            canonicalText = canonicalText,
+            displayTextRu = displayTextRu,
+            displayTextEn = displayTextEn,
             attempts = attempts,
             accuracyPercent = acc,
         )

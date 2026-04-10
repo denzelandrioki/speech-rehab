@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.Flow
 data class WordWithCategoryRow(
     val id: Long,
     val text: String,
-    val displayText: String,
+    val displayTextRu: String,
+    val displayTextEn: String,
+    val bundledAssetName: String,
     val categoryId: Long,
     val enabled: Boolean,
     val isCustom: Boolean,
@@ -33,47 +35,47 @@ interface WordDao {
 
     @Query(
         """
-        SELECT w.id, w.text, w.displayText, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
+        SELECT w.id, w.text, w.displayTextRu, w.displayTextEn, w.bundledAssetName, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
                c.name AS categoryName
         FROM words w
         INNER JOIN categories c ON c.id = w.categoryId
-        ORDER BY c.name ASC, w.displayText ASC, w.text ASC
+        ORDER BY c.name ASC, w.displayTextRu ASC, w.text ASC
         """,
     )
     fun observeAllWordsWithCategory(): Flow<List<WordWithCategoryRow>>
 
     @Query(
         """
-        SELECT w.id, w.text, w.displayText, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
+        SELECT w.id, w.text, w.displayTextRu, w.displayTextEn, w.bundledAssetName, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
                c.name AS categoryName
         FROM words w
         INNER JOIN categories c ON c.id = w.categoryId
         WHERE w.enabled = 1
-        ORDER BY w.displayText ASC, w.text ASC
+        ORDER BY w.displayTextRu ASC, w.text ASC
         """,
     )
     fun observeEnabledWordsWithCategory(): Flow<List<WordWithCategoryRow>>
 
     @Query(
         """
-        SELECT w.id, w.text, w.displayText, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
+        SELECT w.id, w.text, w.displayTextRu, w.displayTextEn, w.bundledAssetName, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
                c.name AS categoryName
         FROM words w
         INNER JOIN categories c ON c.id = w.categoryId
         WHERE w.enabled = 1 AND w.categoryId IN (:categoryIds)
-        ORDER BY w.displayText ASC, w.text ASC
+        ORDER BY w.displayTextRu ASC, w.text ASC
         """,
     )
     suspend fun getEnabledWordsInCategories(categoryIds: List<Long>): List<WordWithCategoryRow>
 
     @Query(
         """
-        SELECT w.id, w.text, w.displayText, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
+        SELECT w.id, w.text, w.displayTextRu, w.displayTextEn, w.bundledAssetName, w.categoryId, w.enabled, w.isCustom, w.consecutiveCorrect, w.consecutiveIncorrect,
                c.name AS categoryName
         FROM words w
         INNER JOIN categories c ON c.id = w.categoryId
         WHERE w.enabled = 1
-        ORDER BY w.displayText ASC, w.text ASC
+        ORDER BY w.displayTextRu ASC, w.text ASC
         """,
     )
     suspend fun getAllEnabledWordsWithCategory(): List<WordWithCategoryRow>

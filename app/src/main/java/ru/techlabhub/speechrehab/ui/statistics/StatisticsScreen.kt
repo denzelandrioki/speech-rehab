@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.domain.model.DailyStats
 import ru.techlabhub.speechrehab.domain.model.TrendDirection
+import ru.techlabhub.speechrehab.domain.model.WordDisplayFormatter
 import ru.techlabhub.speechrehab.ui.common.categoryTitle
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -46,6 +47,7 @@ fun StatisticsScreen(
 ) {
     val snap by vm.snapshot.collectAsState()
     val loading by vm.loading.collectAsState()
+    val cardTextMode by vm.trainingTextLanguage.collectAsState()
 
     Scaffold(
         topBar = {
@@ -101,16 +103,30 @@ fun StatisticsScreen(
 
                     Text(stringResource(R.string.stats_hardest), style = MaterialTheme.typography.titleLarge)
                     s.hardestWords.forEach { w ->
+                        val line =
+                            WordDisplayFormatter.formatRank(
+                                w.canonicalText,
+                                w.displayTextRu,
+                                w.displayTextEn,
+                                cardTextMode,
+                            )
                         Text(
-                            text = stringResource(R.string.stats_word_line, w.text, w.accuracyPercent, w.attempts),
+                            text = stringResource(R.string.stats_word_line, line, w.accuracyPercent, w.attempts),
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     }
 
                     Text(stringResource(R.string.stats_easiest), style = MaterialTheme.typography.titleLarge)
                     s.easiestWords.forEach { w ->
+                        val line =
+                            WordDisplayFormatter.formatRank(
+                                w.canonicalText,
+                                w.displayTextRu,
+                                w.displayTextEn,
+                                cardTextMode,
+                            )
                         Text(
-                            text = stringResource(R.string.stats_word_line, w.text, w.accuracyPercent, w.attempts),
+                            text = stringResource(R.string.stats_word_line, line, w.accuracyPercent, w.attempts),
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     }

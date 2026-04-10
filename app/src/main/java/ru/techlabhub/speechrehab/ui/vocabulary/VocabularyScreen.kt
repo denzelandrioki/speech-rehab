@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ru.techlabhub.speechrehab.R
+import ru.techlabhub.speechrehab.domain.model.WordDisplayFormatter
 import ru.techlabhub.speechrehab.ui.common.categoryTitle
 
 /**
@@ -40,6 +41,7 @@ fun VocabularyScreen(
     vm: VocabularyViewModel = hiltViewModel(),
 ) {
     val words by vm.words.collectAsState()
+    val cardTextMode by vm.trainingTextLanguage.collectAsState()
 
     Scaffold(
         topBar = {
@@ -68,7 +70,11 @@ fun VocabularyScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(w.displayLabel, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            WordDisplayFormatter.vocabularyLine(w, cardTextMode),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
                         Text(categoryTitle(w.categoryName), style = MaterialTheme.typography.bodyLarge)
                     }
                     Switch(

@@ -13,7 +13,9 @@ fun WordWithCategoryRow.toWordItem(): WordItem =
     WordItem(
         id = id,
         text = text,
-        displayText = displayText,
+        displayTextRu = displayTextRu,
+        displayTextEn = displayTextEn,
+        bundledAssetName = bundledAssetName,
         categoryId = categoryId,
         categoryName = categoryName,
         enabled = enabled,

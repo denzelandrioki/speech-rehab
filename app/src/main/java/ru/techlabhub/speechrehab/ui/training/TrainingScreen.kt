@@ -1,6 +1,7 @@
 package ru.techlabhub.speechrehab.ui.training
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -9,8 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.ImageNotSupported
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -35,10 +38,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ru.techlabhub.speechrehab.R
+import ru.techlabhub.speechrehab.domain.model.ImageSource
+import ru.techlabhub.speechrehab.domain.model.WordDisplayFormatter
 import java.io.File
 
 /**
- * Экран тренировки: изображение (файл или URL), подпись слова при включённой подсказке,
+ * Экран тренировки: изображение (файл, asset или URL), подпись слова при включённой подсказке,
  * кнопки «верно» / «неверно» / «следующая». Состояние — [TrainingViewModel.ui].
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,29 +96,65 @@ fun TrainingScreen(
 
                 state.card != null -> {
                     val card = state.card!!
-                    val model: Any =
-                        if (card.imageUri.startsWith("http")) {
-                            card.imageUri
-                        } else {
-                            File(card.imageUri)
-                        }
-                    AsyncImage(
-                        model =
-                            ImageRequest.Builder(context)
-                                .data(model)
-                                .crossfade(true)
-                                .build(),
-                        contentDescription = card.word.displayLabel,
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f),
-                        contentScale = ContentScale.Fit,
-                    )
+                    val label =
+                        WordDisplayFormatter.displayLabel(card.word, state.trainingTextLanguage)
+                    val hasImage =
+                        card.imageUri != null &&
+                            card.source != ImageSource.NONE
 
-                    if (state.showWordHint) {
+                    if (hasImage) {
+                        val uri = card.imageUri!!
+                        val model: Any =
+                            when {
+                                uri.startsWith("http", ignoreCase = true) -> uri
+                                uri.startsWith("file:///android_asset/") -> uri
+                                uri.startsWith("file://") -> File(uri.removePrefix("file://"))
+                                else -> File(uri)
+                            }
+                        AsyncImage(
+                            model =
+                                ImageRequest.Builder(context)
+                                    .data(model)
+                                    .crossfade(true)
+                                    .build(),
+                            contentDescription = label.ifBlank { card.word.text },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f),
+                            contentScale = ContentScale.Fit,
+                        )
+                    } else {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(16.dp),
+                            ) {
+                                Icon(
+                                    Icons.Outlined.ImageNotSupported,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.outline,
+                                )
+                                Text(
+                                    text = stringResource(R.string.training_image_unavailable_hint),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
+                    }
+
+                    if (state.showWordHint && label.isNotEmpty()) {
                         Text(
-                            text = card.word.displayLabel,
+                            text = label,
                             style = MaterialTheme.typography.headlineMedium,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth(),

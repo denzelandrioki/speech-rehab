@@ -25,6 +25,9 @@ object DatabaseModule {
             context,
             SpeechRehabDatabase::class.java,
             "speech_rehab.db",
-        ).addMigrations(SpeechRehabDatabase.MIGRATION_1_2)
+        ).addMigrations(
+            SpeechRehabDatabase.MIGRATION_1_2,
+            SpeechRehabDatabase.MIGRATION_2_3,
+        )
             .build()
 }

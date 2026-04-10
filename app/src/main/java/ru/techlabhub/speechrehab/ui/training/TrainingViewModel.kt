@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.di.ApplicationScope
 import ru.techlabhub.speechrehab.domain.model.ImageCard
+import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import ru.techlabhub.speechrehab.domain.repository.TrainingRepository
 import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.usecase.GetNextTrainingCardUseCase
@@ -31,6 +32,8 @@ data class TrainingUiState(
     /** Уже отмечен результат для текущей карточки — до «Следующая». */
     val lockedAfterAnswer: Boolean = false,
     val showWordHint: Boolean = true,
+    /** Режим подписи слова на карточке (независимо от языка интерфейса). */
+    val trainingTextLanguage: TrainingTextLanguage = TrainingTextLanguage.RUSSIAN,
 )
 
 /**
@@ -71,7 +74,12 @@ class TrainingViewModel @Inject constructor(
         viewModelScope.launch {
             _ui.update { it.copy(loading = true, errorMessage = null, lockedAfterAnswer = false) }
             val prefs = userPreferencesRepository.preferencesFlow.first()
-            _ui.update { it.copy(showWordHint = prefs.showWordHint) }
+            _ui.update {
+                it.copy(
+                    showWordHint = prefs.showWordHint,
+                    trainingTextLanguage = prefs.trainingTextLanguage,
+                )
+            }
             val card =
                 try {
                     getNextTrainingCard(prefs, lastWordId)
@@ -92,7 +100,7 @@ class TrainingViewModel @Inject constructor(
                     card = card,
                     errorMessage =
                         if (card == null) {
-                            appContext.getString(R.string.training_error_no_card)
+                            appContext.getString(R.string.training_error_no_words)
                         } else {
                             null
                         },

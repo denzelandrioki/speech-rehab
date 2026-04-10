@@ -21,7 +21,7 @@ import javax.inject.Singleton
  * 5. Назначить каждому кандидату вес: чем больше суммарных попыток при слабой серии верных — тем выше приоритет
  *    (эвристика вместо отдельного счётчика ошибок).
  * 6. Случайно выбрать слово с учётом весов ([CardWeightEngine.pickWeighted]).
- * 7. Получить картинку: [ImageRepository.resolveCard] (кэш → ARASAAC → Pixabay → Pexels по настройкам).
+ * 7. Получить картинку: [ImageRepository.resolveCard] (offline-first; при отсутствии файла — заглушка в UI).
  */
 @Singleton
 class GetNextTrainingCardUseCase @Inject constructor(

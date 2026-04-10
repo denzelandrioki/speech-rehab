@@ -13,10 +13,14 @@ data class DayAggregateRow(
     val correct: Long,
 )
 
-/** Сводка по слову из JOIN с `words`; [wordText] уже с учётом русской подписи (SQL CASE). */
+/**
+ * Сводка по слову; [canonicalText], [displayTextRu], [displayTextEn] — для подписи в статистике под выбранный режим.
+ */
 data class WordAggregateRow(
     val wordId: Long,
-    val wordText: String,
+    val canonicalText: String,
+    val displayTextRu: String,
+    val displayTextEn: String,
     val categoryId: Long,
     val attempts: Int,
     val correct: Long,
@@ -61,7 +65,9 @@ interface AnswerAttemptDao {
     @Query(
         """
         SELECT w.id AS wordId,
-               CASE WHEN LENGTH(TRIM(COALESCE(w.displayText, ''))) > 0 THEN w.displayText ELSE w.text END AS wordText,
+               w.text AS canonicalText,
+               w.displayTextRu AS displayTextRu,
+               w.displayTextEn AS displayTextEn,
                w.categoryId AS categoryId,
                COUNT(a.id) AS attempts,
                SUM(CASE WHEN a.isCorrect THEN 1 ELSE 0 END) AS correct
@@ -78,7 +84,9 @@ interface AnswerAttemptDao {
     @Query(
         """
         SELECT w.id AS wordId,
-               CASE WHEN LENGTH(TRIM(COALESCE(w.displayText, ''))) > 0 THEN w.displayText ELSE w.text END AS wordText,
+               w.text AS canonicalText,
+               w.displayTextRu AS displayTextRu,
+               w.displayTextEn AS displayTextEn,
                w.categoryId AS categoryId,
                COUNT(a.id) AS attempts,
                SUM(CASE WHEN a.isCorrect THEN 1 ELSE 0 END) AS correct

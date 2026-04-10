@@ -19,7 +19,7 @@ import ru.techlabhub.speechrehab.data.local.entity.WordEntity
 /**
  * Локальная база Room: категории, слова, кэш путей картинок, сессии тренировок, попытки ответов.
  *
- * Версия 2: колонка [WordEntity.displayText] для русской подписи (миграция [MIGRATION_1_2]).
+ * Версия 3: [WordEntity.displayTextRu], [WordEntity.displayTextEn], [WordEntity.bundledAssetName] (миграция [MIGRATION_2_3]).
  */
 @Database(
     entities = [
@@ -29,7 +29,7 @@ import ru.techlabhub.speechrehab.data.local.entity.WordEntity
         TrainingSessionEntity::class,
         AnswerAttemptEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class SpeechRehabDatabase : RoomDatabase() {
@@ -51,6 +51,43 @@ abstract class SpeechRehabDatabase : RoomDatabase() {
                             arrayOf(ru, en),
                         )
                     }
+                }
+            }
+
+        /**
+         * displayText → displayTextRu + displayTextEn (копия из text), колонка bundledAssetName.
+         * Старые пользователи: русская подпись переносится из displayText, английская = text.
+         */
+        val MIGRATION_2_3: Migration =
+            object : Migration(2, 3) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS `words_new` (
+                          `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                          `text` TEXT NOT NULL,
+                          `displayTextRu` TEXT NOT NULL DEFAULT '',
+                          `displayTextEn` TEXT NOT NULL DEFAULT '',
+                          `bundledAssetName` TEXT NOT NULL DEFAULT '',
+                          `categoryId` INTEGER NOT NULL,
+                          `enabled` INTEGER NOT NULL DEFAULT 1,
+                          `isCustom` INTEGER NOT NULL DEFAULT 0,
+                          `consecutiveCorrect` INTEGER NOT NULL DEFAULT 0,
+                          `consecutiveIncorrect` INTEGER NOT NULL DEFAULT 0,
+                          FOREIGN KEY(`categoryId`) REFERENCES `categories`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                        )
+                        """.trimIndent(),
+                    )
+                    db.execSQL(
+                        """
+                        INSERT INTO words_new (id, text, displayTextRu, displayTextEn, bundledAssetName, categoryId, enabled, isCustom, consecutiveCorrect, consecutiveIncorrect)
+                        SELECT id, text, displayText, text, '', categoryId, enabled, isCustom, consecutiveCorrect, consecutiveIncorrect FROM words
+                        """.trimIndent(),
+                    )
+                    db.execSQL("DROP TABLE words")
+                    db.execSQL("ALTER TABLE words_new RENAME TO words")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_words_categoryId` ON `words` (`categoryId`)")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_words_enabled` ON `words` (`enabled`)")
                 }
             }
     }
