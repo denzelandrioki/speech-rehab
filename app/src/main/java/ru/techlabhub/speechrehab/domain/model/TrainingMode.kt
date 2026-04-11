@@ -1,7 +1,9 @@
 package ru.techlabhub.speechrehab.domain.model
 
 /**
- * Режим подбора слов для следующей карточки; фильтрация пула выполняется в [ru.techlabhub.speechrehab.domain.analytics.CardWeightEngine.filterByMode].
+ * Режим подбора слов для следующей карточки; фильтрация пула — [ru.techlabhub.speechrehab.domain.analytics.CardWeightEngine.filterByMode].
+ *
+ * **Не путать с картинками:** «новое слово» здесь = по счётчику попыток в БД, не «нет иллюстрации».
  */
 enum class TrainingMode {
     /** Случайно из доступного пула (с учётом категорий в настройках). */

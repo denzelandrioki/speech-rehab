@@ -12,6 +12,7 @@ import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.usecase.GetNextTrainingCardUseCase
 import ru.techlabhub.speechrehab.domain.usecase.NextTrainingCardEmptyReason
 import dagger.hilt.android.lifecycle.HiltViewModel
+import timber.log.Timber
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -75,6 +76,7 @@ class TrainingViewModel @Inject constructor(
         viewModelScope.launch {
             _ui.update { it.copy(loading = true, errorMessage = null, lockedAfterAnswer = false) }
             val prefs = userPreferencesRepository.preferencesFlow.first()
+            Timber.d("TrainingScreen: loadNextCard trainingMode=%s", prefs.trainingMode.name)
             _ui.update {
                 it.copy(
                     showWordHint = prefs.showWordHint,
@@ -105,6 +107,12 @@ class TrainingViewModel @Inject constructor(
                         appContext.getString(R.string.training_error_no_words)
                     else -> appContext.getString(R.string.training_error_no_card)
                 }
+            if (card == null) {
+                Timber.d(
+                    "TrainingScreen: no card emptyReason=%s (not an image issue unless word was picked)",
+                    outcome.emptyReason.name,
+                )
+            }
             _ui.update {
                 it.copy(
                     loading = false,

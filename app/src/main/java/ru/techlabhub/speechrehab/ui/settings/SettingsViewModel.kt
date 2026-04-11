@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -100,17 +101,22 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setRefreshRemoteWhenNoLocalImage(value: Boolean) {
-        viewModelScope.launch { prefs.setRefreshRemoteWhenNoLocalImage(value) }
+        viewModelScope.launch {
+            Timber.d("Settings: refreshRemoteWhenNoLocalImage=%s", value)
+            prefs.setRefreshRemoteWhenNoLocalImage(value)
+        }
     }
 
     fun prefetchMissingImagesNow() {
         viewModelScope.launch {
             _prefetchRunning.value = true
+            Timber.i("Settings: prefetch missing images button — started")
             try {
                 val p = prefs.preferencesFlow.first()
                 _lastPrefetchResult.value = prefetchMissingImagesUseCase(p)
             } finally {
                 _prefetchRunning.value = false
+                Timber.i("Settings: prefetch missing images button — finished")
             }
         }
     }

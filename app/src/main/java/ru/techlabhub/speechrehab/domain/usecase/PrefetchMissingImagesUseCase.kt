@@ -7,6 +7,7 @@ import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
 import ru.techlabhub.speechrehab.domain.repository.WordRepository
 import kotlinx.coroutines.yield
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,10 +32,12 @@ class PrefetchMissingImagesUseCase @Inject constructor(
             prefs.preferredImageMode == PreferredImageMode.LOCAL_ONLY ||
             prefs.onlineImageFetchingMode == OnlineImageFetchingMode.DISABLED
         ) {
+            Timber.i("PrefetchMissingImages: skipped (prefs disallow remote prefetch)")
             return PrefetchMissingImagesResult(0, 0, 0)
         }
         wordRepository.ensureSeededIfEmpty()
         val words = wordRepository.getEnabledWordsForTraining(prefs.enabledCategoryIds)
+        Timber.i("PrefetchMissingImages: started words=%d", words.size)
         var gained = 0
         var stillNone = 0
         for (word in words) {
@@ -46,10 +49,18 @@ class PrefetchMissingImagesUseCase @Inject constructor(
                 gained++
             }
         }
-        return PrefetchMissingImagesResult(
-            wordsProcessed = words.size,
-            gainedLocalOrRemotePreview = gained,
-            stillNoImage = stillNone,
+        val result =
+            PrefetchMissingImagesResult(
+                wordsProcessed = words.size,
+                gainedLocalOrRemotePreview = gained,
+                stillNoImage = stillNone,
+            )
+        Timber.i(
+            "PrefetchMissingImages: finished processed=%d gained=%d stillMissing=%d",
+            result.wordsProcessed,
+            result.gainedLocalOrRemotePreview,
+            result.stillNoImage,
         )
+        return result
     }
 }

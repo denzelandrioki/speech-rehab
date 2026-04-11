@@ -84,6 +84,8 @@ class OfflineFirstImageResolver @Inject constructor(
             return none(word)
         }
 
+        Timber.d("Remote image fetch attempted (local sources missed) word=%s", term)
+
         var chosenUrl: String? = null
         var chosenSource = ImageSource.ARASAAC
 

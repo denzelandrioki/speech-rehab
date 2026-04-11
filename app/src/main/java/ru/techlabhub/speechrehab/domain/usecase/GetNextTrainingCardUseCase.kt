@@ -7,6 +7,7 @@ import ru.techlabhub.speechrehab.domain.model.TrainingMode
 import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
 import ru.techlabhub.speechrehab.domain.repository.WordRepository
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -57,6 +58,11 @@ class GetNextTrainingCardUseCase @Inject constructor(
         wordRepository.ensureSeededIfEmpty()
 
         val pool = wordRepository.getEnabledWordsForTraining(prefs.enabledCategoryIds)
+        Timber.d(
+            "NextTrainingCard: mode=%s poolSize=%d",
+            prefs.trainingMode.name,
+            pool.size,
+        )
         if (pool.isEmpty()) {
             return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NO_ENABLED_WORDS)
         }
@@ -65,10 +71,17 @@ class GetNextTrainingCardUseCase @Inject constructor(
             answers.hardestWords(minAttempts = 2, limit = 40)
                 .map { it.wordId }
                 .toSet()
-        // COUNT(*) < 1 ⇒ только 0 попыток
+        // COUNT(*) < 1 ⇒ только 0 попыток (NEW_ONLY)
         val zeroAttemptIds = words.wordIdsWithTotalAttemptsBelow(maxAttempts = 1).toSet()
-        // COUNT(*) < 2 ⇒ 0 или 1 попытка (режим FRESH_WORDS)
+        // COUNT(*) < 2 ⇒ 0 или 1 попытка (FRESH_WORDS + fallback)
         val freshWordIds = words.wordIdsWithTotalAttemptsBelow(maxAttempts = 2).toSet()
+        val zeroInPool = pool.count { it.id in zeroAttemptIds }
+        Timber.d(
+            "NextTrainingCard: zeroAttemptWordIds(db)=%d zeroInEnabledPool=%d freshIds(db)=%d",
+            zeroAttemptIds.size,
+            zeroInPool,
+            freshWordIds.size,
+        )
 
         val modeAdjusted =
             CardWeightEngine.filterByMode(
@@ -78,8 +91,10 @@ class GetNextTrainingCardUseCase @Inject constructor(
                 freshWordIds = freshWordIds,
                 zeroAttemptWordIds = zeroAttemptIds,
             )
+        Timber.d("NextTrainingCard: modeAdjustedSize=%d", modeAdjusted.size)
 
         if (prefs.trainingMode == TrainingMode.NEW_ONLY && modeAdjusted.isEmpty()) {
+            Timber.i("NextTrainingCard: NEW_ONLY exhausted (no words with 0 attempts in pool)")
             return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NEW_ONLY_EXHAUSTED)
         }
 
@@ -89,6 +104,7 @@ class GetNextTrainingCardUseCase @Inject constructor(
             } else {
                 modeAdjusted
             }
+        Timber.d("NextTrainingCard: candidatesSize=%d (lastWordId=%s)", candidates.size, lastWordId)
 
         if (candidates.isEmpty()) {
             return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NONE)
@@ -113,6 +129,7 @@ class GetNextTrainingCardUseCase @Inject constructor(
 
         val picked = CardWeightEngine.pickWeighted(weighted) ?: return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NONE)
 
+        Timber.d("NextTrainingCard: resolveCard start wordId=%d text=%s", picked.id, picked.text)
         val card: ImageCard = imageRepository.resolveCard(picked, prefs)
         return GetNextTrainingCardOutcome(card, NextTrainingCardEmptyReason.NONE)
     }

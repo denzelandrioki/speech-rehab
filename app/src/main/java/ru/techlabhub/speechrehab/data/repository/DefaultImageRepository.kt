@@ -5,6 +5,7 @@ import ru.techlabhub.speechrehab.domain.model.ImageCard
 import ru.techlabhub.speechrehab.domain.model.WordItem
 import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,5 +17,8 @@ class DefaultImageRepository @Inject constructor(
     override suspend fun resolveCard(
         word: WordItem,
         prefs: UserTrainingPreferences,
-    ): ImageCard = offlineFirstImageResolver.resolve(word, prefs)
+    ): ImageCard {
+        Timber.d("ImageRepository.resolveCard started wordId=%d text=%s", word.id, word.text)
+        return offlineFirstImageResolver.resolve(word, prefs)
+    }
 }
