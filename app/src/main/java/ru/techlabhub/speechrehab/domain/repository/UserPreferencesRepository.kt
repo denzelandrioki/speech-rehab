@@ -25,6 +25,11 @@ data class UserTrainingPreferences(
     val onlineImageFetchingMode: OnlineImageFetchingMode = OnlineImageFetchingMode.ENABLED,
     /** Порядок локальных источников и политика «только локально». */
     val preferredImageMode: PreferredImageMode = PreferredImageMode.LOCAL_THEN_REMOTE,
+    /**
+     * Если локальной картинки нет (bundled + кэш), пытаться загрузить из сети при разрешённом online fetch.
+     * Не связано с [TrainingMode.NEW_ONLY] (новые слова по попыткам — отдельный конвейер).
+     */
+    val refreshRemoteWhenNoLocalImage: Boolean = true,
 )
 
 /** Чтение и запись пользовательских настроек (реактивно через [preferencesFlow]). */
@@ -48,4 +53,6 @@ interface UserPreferencesRepository {
     suspend fun setOnlineImageFetchingMode(mode: OnlineImageFetchingMode)
 
     suspend fun setPreferredImageMode(mode: PreferredImageMode)
+
+    suspend fun setRefreshRemoteWhenNoLocalImage(value: Boolean)
 }

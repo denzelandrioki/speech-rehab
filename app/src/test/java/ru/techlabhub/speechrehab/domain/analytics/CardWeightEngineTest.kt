@@ -46,9 +46,58 @@ class CardWeightEngineTest {
     fun filter_hardMode_prefersHardPool() {
         val words = listOf(word(1), word(2), word(3))
         val hard = setOf(2L)
-        val low = setOf(3L)
-        val out = CardWeightEngine.filterByMode(words, TrainingMode.HARD_WORDS, hard, low)
+        val out =
+            CardWeightEngine.filterByMode(
+                words,
+                TrainingMode.HARD_WORDS,
+                hardWordIds = hard,
+                freshWordIds = emptySet(),
+                zeroAttemptWordIds = emptySet(),
+            )
         assertEquals(1, out.size)
         assertEquals(2L, out.first().id)
+    }
+
+    @Test
+    fun filter_newOnly_strictZeroAttempts_noFallbackWhenEmpty() {
+        val words = listOf(word(1), word(2))
+        val out =
+            CardWeightEngine.filterByMode(
+                words,
+                TrainingMode.NEW_ONLY,
+                hardWordIds = emptySet(),
+                freshWordIds = setOf(1L, 2L),
+                zeroAttemptWordIds = emptySet(),
+            )
+        assertTrue(out.isEmpty())
+    }
+
+    @Test
+    fun filter_newOnly_keepsOnlyZeroAttemptIds() {
+        val words = listOf(word(1), word(2), word(3))
+        val out =
+            CardWeightEngine.filterByMode(
+                words,
+                TrainingMode.NEW_ONLY,
+                hardWordIds = emptySet(),
+                freshWordIds = setOf(1L, 2L),
+                zeroAttemptWordIds = setOf(2L),
+            )
+        assertEquals(1, out.size)
+        assertEquals(2L, out.first().id)
+    }
+
+    @Test
+    fun filter_freshWords_fallbackWhenNoFresh() {
+        val words = listOf(word(1), word(2))
+        val out =
+            CardWeightEngine.filterByMode(
+                words,
+                TrainingMode.FRESH_WORDS,
+                hardWordIds = emptySet(),
+                freshWordIds = emptySet(),
+                zeroAttemptWordIds = emptySet(),
+            )
+        assertEquals(2, out.size)
     }
 }

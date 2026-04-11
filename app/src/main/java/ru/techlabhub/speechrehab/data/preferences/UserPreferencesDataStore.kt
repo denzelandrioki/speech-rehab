@@ -45,6 +45,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         val trainingTextLanguage = stringPreferencesKey("training_text_language")
         val onlineImageFetching = stringPreferencesKey("online_image_fetching")
         val preferredImageMode = stringPreferencesKey("preferred_image_mode")
+        val refreshRemoteWhenNoLocalImage = booleanPreferencesKey("refresh_remote_when_no_local_image")
     }
 
     override val preferencesFlow: Flow<UserTrainingPreferences> =
@@ -75,6 +76,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
                 trainingTextLanguage = cardText,
                 onlineImageFetchingMode = onlineFetch,
                 preferredImageMode = prefImg,
+                refreshRemoteWhenNoLocalImage = p[Keys.refreshRemoteWhenNoLocalImage] ?: true,
             )
         }
 
@@ -120,5 +122,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setPreferredImageMode(mode: PreferredImageMode) {
         ds.edit { it[Keys.preferredImageMode] = mode.name }
+    }
+
+    override suspend fun setRefreshRemoteWhenNoLocalImage(value: Boolean) {
+        ds.edit { it[Keys.refreshRemoteWhenNoLocalImage] = value }
     }
 }

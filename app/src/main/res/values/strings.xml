@@ -18,6 +18,8 @@
     <string name="training_incorrect">Incorrect</string>
     <string name="training_next">Next</string>
     <string name="training_error_no_words">No words available (check categories and vocabulary).</string>
+    <string name="training_error_no_card">Could not load a card. Try again or change training mode.</string>
+    <string name="training_error_new_only_exhausted">No unseen words left: every word has at least one attempt. Choose another training mode.</string>
     <string name="training_error_load">Load error</string>
     <string name="training_image_unavailable_hint">Image unavailable offline. You can enable online download in settings or add bundled pictures.</string>
 
@@ -47,7 +49,8 @@
     <string name="mode_random">Random</string>
     <string name="mode_by_category">By category</string>
     <string name="mode_hard_words">Hard words</string>
-    <string name="mode_new_only">New only</string>
+    <string name="mode_new_only">Unseen only (0 attempts)</string>
+    <string name="mode_fresh_words">Low attempts (0–1)</string>
     <string name="mode_mixed">Mixed</string>
     <string name="settings_sources_section">Image sources (when online fetch is on: ARASAAC → Pixabay → Pexels)</string>
     <string name="source_arasaac">ARASAAC</string>
@@ -71,6 +74,12 @@
     <string name="online_fetch_disabled">Disabled (offline only)</string>
     <string name="online_fetch_wifi_only">Wi‑Fi only</string>
     <string name="online_fetch_wifi_hint">Uses Wi‑Fi connection only for remote images.</string>
+    <string name="settings_refresh_remote_when_no_local">Download missing images from the internet</string>
+    <string name="settings_refresh_remote_when_no_local_hint">If no bundled or cached picture, try APIs (separate from “new words” training mode).</string>
+    <string name="settings_prefetch_missing_now">Prefetch missing images for vocabulary</string>
+    <string name="settings_prefetch_running">Downloading…</string>
+    <string name="settings_prefetch_last_result">Done: %1$d words · got image: %2$d · still missing: %3$d</string>
+    <string name="settings_prefetch_skipped">Prefetch skipped (allow online images and turn off local-only).</string>
 
     <string name="settings_preferred_image_section">Local image priority</string>
     <string name="pref_img_bundled_first">Bundled first, then cache</string>

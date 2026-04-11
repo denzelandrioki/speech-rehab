@@ -21,6 +21,10 @@ private enum class LocalImageStep {
 
 /**
  * Offline-first: bundled → файловый кэш → (опционально) удалённые API с сохранением в кэш.
+ * Режим тренировки ([ru.techlabhub.speechrehab.domain.model.TrainingMode]) сюда не передаётся:
+ * «новое слово» по попыткам и «нет локальной картинки» — разные вещи; для любого выбранного слова
+ * при отсутствии локального изображения выполняется та же цепочка remote (если настройки разрешают).
+ *
  * Точка расширения для prefetch / backend без смены контракта [ImageCard].
  */
 @Singleton
@@ -75,8 +79,8 @@ class OfflineFirstImageResolver @Inject constructor(
             }
         }
 
-        if (!remoteAllowed(prefs)) {
-            Timber.d("Remote image skipped (policy or network) word=%s", word.text)
+        if (!remoteAllowedAfterLocalMiss(prefs)) {
+            Timber.d("Remote image skipped (policy, network, or refreshRemoteWhenNoLocalImage=false) word=%s", word.text)
             return none(word)
         }
 
@@ -165,7 +169,14 @@ class OfflineFirstImageResolver @Inject constructor(
             -> listOf(LocalImageStep.BUNDLED, LocalImageStep.CACHE)
         }
 
-    private fun remoteAllowed(prefs: UserTrainingPreferences): Boolean {
+    /**
+     * Сеть после неудачи локальных шагов: отдельно от выбора слова в тренировке.
+     * [UserTrainingPreferences.refreshRemoteWhenNoLocalImage] выключает дозагрузку, не меняя offline-first порядок.
+     */
+    private fun remoteAllowedAfterLocalMiss(prefs: UserTrainingPreferences): Boolean {
+        if (!prefs.refreshRemoteWhenNoLocalImage) {
+            return false
+        }
         if (prefs.preferredImageMode == PreferredImageMode.LOCAL_ONLY) {
             return false
         }

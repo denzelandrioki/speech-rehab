@@ -9,7 +9,7 @@ import kotlin.random.Random
  *
  * - [computeWeight] — чем выше вес, тем чаще слово попадёт в выбор (при [pickWeighted]).
  * - [pickWeighted] — классический roulette wheel по списку весов.
- * - [filterByMode] — сужает пул по [TrainingMode] (например, только «сложные» или только «мало попыток»).
+ * - [filterByMode] — сужает пул по [TrainingMode] (например, только «сложные» или только «без попыток»).
  *
  * При необходимости стратегию можно вынести за интерфейс без смены остального кода.
  */
@@ -62,19 +62,25 @@ object CardWeightEngine {
 
     /**
      * Оставляет в пуле только те слова, которые соответствуют режиму тренировки.
-     * Для [TrainingMode.HARD_WORDS] / [TrainingMode.NEW_ONLY] при пустом результате возвращает исходный пул,
-     * чтобы тренировка не остановилась.
+     *
+     * @param freshWordIds id слов с суммарным числом попыток &lt; 2 ([TrainingMode.FRESH_WORDS]).
+     * @param zeroAttemptWordIds id слов с 0 попыток ([TrainingMode.NEW_ONLY]).
+     *
+     * Для [TrainingMode.HARD_WORDS] / [TrainingMode.FRESH_WORDS] при пустом результате возвращается исходный пул.
+     * [TrainingMode.NEW_ONLY] **не** делает такого fallback.
      */
     fun filterByMode(
         words: List<WordItem>,
         mode: TrainingMode,
         hardWordIds: Set<Long>,
-        lowAttemptWordIds: Set<Long>,
+        freshWordIds: Set<Long>,
+        zeroAttemptWordIds: Set<Long>,
     ): List<WordItem> {
         return when (mode) {
             TrainingMode.RANDOM, TrainingMode.BY_CATEGORY -> words
             TrainingMode.HARD_WORDS -> words.filter { it.id in hardWordIds }.ifEmpty { words }
-            TrainingMode.NEW_ONLY -> words.filter { it.id in lowAttemptWordIds }.ifEmpty { words }
+            TrainingMode.NEW_ONLY -> words.filter { it.id in zeroAttemptWordIds }
+            TrainingMode.FRESH_WORDS -> words.filter { it.id in freshWordIds }.ifEmpty { words }
             TrainingMode.MIXED -> {
                 val hard = words.filter { it.id in hardWordIds }
                 val pool = (hard + words).distinctBy { it.id }

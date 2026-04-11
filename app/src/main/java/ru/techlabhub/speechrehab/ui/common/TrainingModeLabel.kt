@@ -13,5 +13,6 @@ fun trainingModeLabel(mode: TrainingMode): String =
         TrainingMode.BY_CATEGORY -> stringResource(R.string.mode_by_category)
         TrainingMode.HARD_WORDS -> stringResource(R.string.mode_hard_words)
         TrainingMode.NEW_ONLY -> stringResource(R.string.mode_new_only)
+        TrainingMode.FRESH_WORDS -> stringResource(R.string.mode_fresh_words)
         TrainingMode.MIXED -> stringResource(R.string.mode_mixed)
     }

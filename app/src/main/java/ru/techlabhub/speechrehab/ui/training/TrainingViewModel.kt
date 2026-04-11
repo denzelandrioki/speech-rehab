@@ -10,6 +10,7 @@ import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import ru.techlabhub.speechrehab.domain.repository.TrainingRepository
 import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.usecase.GetNextTrainingCardUseCase
+import ru.techlabhub.speechrehab.domain.usecase.NextTrainingCardEmptyReason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -80,7 +81,7 @@ class TrainingViewModel @Inject constructor(
                     trainingTextLanguage = prefs.trainingTextLanguage,
                 )
             }
-            val card =
+            val outcome =
                 try {
                     getNextTrainingCard(prefs, lastWordId)
                 } catch (e: Exception) {
@@ -93,17 +94,22 @@ class TrainingViewModel @Inject constructor(
                     }
                     return@launch
                 }
+            val card = outcome.imageCard
             lastWordId = card?.word?.id
+            val err =
+                when {
+                    card != null -> null
+                    outcome.emptyReason == NextTrainingCardEmptyReason.NEW_ONLY_EXHAUSTED ->
+                        appContext.getString(R.string.training_error_new_only_exhausted)
+                    outcome.emptyReason == NextTrainingCardEmptyReason.NO_ENABLED_WORDS ->
+                        appContext.getString(R.string.training_error_no_words)
+                    else -> appContext.getString(R.string.training_error_no_card)
+                }
             _ui.update {
                 it.copy(
                     loading = false,
                     card = card,
-                    errorMessage =
-                        if (card == null) {
-                            appContext.getString(R.string.training_error_no_words)
-                        } else {
-                            null
-                        },
+                    errorMessage = err,
                 )
             }
         }

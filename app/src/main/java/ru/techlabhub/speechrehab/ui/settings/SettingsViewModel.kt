@@ -13,9 +13,14 @@ import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
 import ru.techlabhub.speechrehab.domain.repository.WordRepository
+import ru.techlabhub.speechrehab.domain.usecase.PrefetchMissingImagesResult
+import ru.techlabhub.speechrehab.domain.usecase.PrefetchMissingImagesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -33,7 +38,14 @@ class SettingsViewModel @Inject constructor(
     private val db: SpeechRehabDatabase,
     private val prefs: UserPreferencesRepository,
     private val wordRepository: WordRepository,
+    private val prefetchMissingImagesUseCase: PrefetchMissingImagesUseCase,
 ) : ViewModel() {
+
+    private val _prefetchRunning = MutableStateFlow(false)
+    val prefetchRunning: StateFlow<Boolean> = _prefetchRunning.asStateFlow()
+
+    private val _lastPrefetchResult = MutableStateFlow<PrefetchMissingImagesResult?>(null)
+    val lastPrefetchResult: StateFlow<PrefetchMissingImagesResult?> = _lastPrefetchResult.asStateFlow()
 
     val categories: StateFlow<List<Category>> =
         db.categoryDao()
@@ -85,6 +97,22 @@ class SettingsViewModel @Inject constructor(
 
     fun setPreferredImageMode(mode: PreferredImageMode) {
         viewModelScope.launch { prefs.setPreferredImageMode(mode) }
+    }
+
+    fun setRefreshRemoteWhenNoLocalImage(value: Boolean) {
+        viewModelScope.launch { prefs.setRefreshRemoteWhenNoLocalImage(value) }
+    }
+
+    fun prefetchMissingImagesNow() {
+        viewModelScope.launch {
+            _prefetchRunning.value = true
+            try {
+                val p = prefs.preferencesFlow.first()
+                _lastPrefetchResult.value = prefetchMissingImagesUseCase(p)
+            } finally {
+                _prefetchRunning.value = false
+            }
+        }
     }
 
     fun setCategoryEnabled(

@@ -15,6 +15,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -146,6 +147,64 @@ fun SettingsScreen(
             if (prefs.onlineImageFetchingMode == OnlineImageFetchingMode.WIFI_ONLY) {
                 Text(
                     stringResource(R.string.online_fetch_wifi_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    stringResource(R.string.settings_refresh_remote_when_no_local),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f).padding(end = 8.dp),
+                )
+                Switch(
+                    checked = prefs.refreshRemoteWhenNoLocalImage,
+                    onCheckedChange = { vm.setRefreshRemoteWhenNoLocalImage(it) },
+                )
+            }
+            Text(
+                stringResource(R.string.settings_refresh_remote_when_no_local_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            val prefetchRunning by vm.prefetchRunning.collectAsState()
+            val lastPrefetch by vm.lastPrefetchResult.collectAsState()
+            val prefetchEnabled =
+                prefs.refreshRemoteWhenNoLocalImage &&
+                    prefs.preferredImageMode != PreferredImageMode.LOCAL_ONLY &&
+                    prefs.onlineImageFetchingMode != OnlineImageFetchingMode.DISABLED
+            OutlinedButton(
+                onClick = { vm.prefetchMissingImagesNow() },
+                enabled = !prefetchRunning && prefetchEnabled,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    if (prefetchRunning) {
+                        stringResource(R.string.settings_prefetch_running)
+                    } else {
+                        stringResource(R.string.settings_prefetch_missing_now)
+                    },
+                )
+            }
+            lastPrefetch?.let { r ->
+                Text(
+                    text =
+                        if (r.wordsProcessed > 0) {
+                            stringResource(
+                                R.string.settings_prefetch_last_result,
+                                r.wordsProcessed,
+                                r.gainedLocalOrRemotePreview,
+                                r.stillNoImage,
+                            )
+                        } else {
+                            stringResource(R.string.settings_prefetch_skipped)
+                        },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
