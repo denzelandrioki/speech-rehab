@@ -19,7 +19,7 @@
     <string name="training_next">Next</string>
     <string name="training_error_no_words">No words available (check categories and vocabulary).</string>
     <string name="training_error_no_card">Could not load a card. Try again or change training mode.</string>
-    <string name="training_error_new_only_exhausted">No unseen words left: every word has at least one attempt. Choose another training mode.</string>
+    <string name="training_error_new_only_exhausted">No words with zero attempts left — each word has at least one recorded attempt. Choose another training mode.</string>
     <string name="training_error_load">Load error</string>
     <string name="training_image_unavailable_hint">Image unavailable offline. You can enable online download in settings or add bundled pictures.</string>
 

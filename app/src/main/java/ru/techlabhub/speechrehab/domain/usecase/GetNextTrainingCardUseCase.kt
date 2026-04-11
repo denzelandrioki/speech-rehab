@@ -35,7 +35,7 @@ data class GetNextTrainingCardOutcome(
  *    Режим [TrainingMode.NEW_ONLY] фильтрует только этот пул (0 попыток); картинки не при чём —
  *    при пустом пуле [ImageRepository] не вызывается. Дозагрузка изображений для «старых» слов
  *    выполняется в [ImageRepository.resolveCard] после того, как слово уже выбрано.
- * 3. Загрузить из БД множество «сложных» слов, id с 0 попыток и id с &lt; 2 попыток — для режимов [TrainingMode].
+ * 3. Загрузить из БД: «сложные» слова, [zeroAttemptIds] (COUNT&lt;1 ⇒ 0 попыток), [freshAttemptIds] (COUNT&lt;2 ⇒ 0–1 попытка) — раздельно для [TrainingMode.NEW_ONLY] и [TrainingMode.FRESH_WORDS].
  * 4. Отфильтровать пул через [CardWeightEngine.filterByMode], исключить предыдущее слово при возможности.
  * 5. Назначить каждому кандидату вес: чем больше суммарных попыток при слабой серии верных — тем выше приоритет
  *    (эвристика вместо отдельного счётчика ошибок).
@@ -58,12 +58,11 @@ class GetNextTrainingCardUseCase @Inject constructor(
         wordRepository.ensureSeededIfEmpty()
 
         val pool = wordRepository.getEnabledWordsForTraining(prefs.enabledCategoryIds)
-        Timber.d(
-            "NextTrainingCard: mode=%s poolSize=%d",
-            prefs.trainingMode.name,
-            pool.size,
-        )
         if (pool.isEmpty()) {
+            Timber.d(
+                "NextTrainingCard: selectedMode=%s poolSize=0 (no enabled words in categories)",
+                prefs.trainingMode.name,
+            )
             return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NO_ENABLED_WORDS)
         }
 
@@ -71,16 +70,18 @@ class GetNextTrainingCardUseCase @Inject constructor(
             answers.hardestWords(minAttempts = 2, limit = 40)
                 .map { it.wordId }
                 .toSet()
-        // COUNT(*) < 1 ⇒ только 0 попыток (NEW_ONLY)
+        // COUNT(*) < 1 ⇒ только 0 попыток — исключительно для NEW_ONLY
         val zeroAttemptIds = words.wordIdsWithTotalAttemptsBelow(maxAttempts = 1).toSet()
-        // COUNT(*) < 2 ⇒ 0 или 1 попытка (FRESH_WORDS + fallback)
-        val freshWordIds = words.wordIdsWithTotalAttemptsBelow(maxAttempts = 2).toSet()
+        // COUNT(*) < 2 ⇒ 0 или 1 попытка — исключительно для FRESH_WORDS (не подставлять в NEW_ONLY)
+        val freshAttemptIds = words.wordIdsWithTotalAttemptsBelow(maxAttempts = 2).toSet()
         val zeroInPool = pool.count { it.id in zeroAttemptIds }
         Timber.d(
-            "NextTrainingCard: zeroAttemptWordIds(db)=%d zeroInEnabledPool=%d freshIds(db)=%d",
+            "NextTrainingCard: selectedMode=%s poolSize=%d zeroAttemptIdsCount=%d freshAttemptIdsCount=%d zeroInPool=%d",
+            prefs.trainingMode.name,
+            pool.size,
             zeroAttemptIds.size,
+            freshAttemptIds.size,
             zeroInPool,
-            freshWordIds.size,
         )
 
         val modeAdjusted =
@@ -88,13 +89,13 @@ class GetNextTrainingCardUseCase @Inject constructor(
                 words = pool,
                 mode = prefs.trainingMode,
                 hardWordIds = hardIds,
-                freshWordIds = freshWordIds,
+                freshAttemptIds = freshAttemptIds,
                 zeroAttemptWordIds = zeroAttemptIds,
             )
-        Timber.d("NextTrainingCard: modeAdjustedSize=%d", modeAdjusted.size)
+        Timber.d("NextTrainingCard: filteredPoolSize(modeAdjusted)=%d", modeAdjusted.size)
 
         if (prefs.trainingMode == TrainingMode.NEW_ONLY && modeAdjusted.isEmpty()) {
-            Timber.i("NextTrainingCard: NEW_ONLY exhausted (no words with 0 attempts in pool)")
+            Timber.i("NextTrainingCard: NEW_ONLY exhausted (no zero-attempt words in enabled pool)")
             return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NEW_ONLY_EXHAUSTED)
         }
 
@@ -104,7 +105,7 @@ class GetNextTrainingCardUseCase @Inject constructor(
             } else {
                 modeAdjusted
             }
-        Timber.d("NextTrainingCard: candidatesSize=%d (lastWordId=%s)", candidates.size, lastWordId)
+        Timber.d("NextTrainingCard: candidatesForPick=%d lastWordId=%s", candidates.size, lastWordId)
 
         if (candidates.isEmpty()) {
             return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NONE)
@@ -129,7 +130,7 @@ class GetNextTrainingCardUseCase @Inject constructor(
 
         val picked = CardWeightEngine.pickWeighted(weighted) ?: return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NONE)
 
-        Timber.d("NextTrainingCard: resolveCard start wordId=%d text=%s", picked.id, picked.text)
+        Timber.d("NextTrainingCard: selectedWord id=%d text=%s → resolveCard", picked.id, picked.text)
         val card: ImageCard = imageRepository.resolveCard(picked, prefs)
         return GetNextTrainingCardOutcome(card, NextTrainingCardEmptyReason.NONE)
     }

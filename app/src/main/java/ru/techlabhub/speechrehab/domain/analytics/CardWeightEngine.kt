@@ -63,8 +63,8 @@ object CardWeightEngine {
     /**
      * Оставляет в пуле только те слова, которые соответствуют режиму тренировки.
      *
-     * @param freshWordIds id слов с суммарным числом попыток &lt; 2 ([TrainingMode.FRESH_WORDS]).
-     * @param zeroAttemptWordIds id слов с 0 попыток ([TrainingMode.NEW_ONLY]).
+     * @param freshAttemptIds id слов с суммарным числом попыток &lt; 2 (0 или 1) — только для [TrainingMode.FRESH_WORDS].
+     * @param zeroAttemptWordIds id слов ровно с 0 попыток — только для [TrainingMode.NEW_ONLY]; с [freshAttemptIds] не смешивать.
      *
      * Для [TrainingMode.HARD_WORDS] / [TrainingMode.FRESH_WORDS] при пустом результате возвращается исходный пул.
      * [TrainingMode.NEW_ONLY] **не** делает такого fallback.
@@ -73,14 +73,14 @@ object CardWeightEngine {
         words: List<WordItem>,
         mode: TrainingMode,
         hardWordIds: Set<Long>,
-        freshWordIds: Set<Long>,
+        freshAttemptIds: Set<Long>,
         zeroAttemptWordIds: Set<Long>,
     ): List<WordItem> {
         return when (mode) {
             TrainingMode.RANDOM, TrainingMode.BY_CATEGORY -> words
             TrainingMode.HARD_WORDS -> words.filter { it.id in hardWordIds }.ifEmpty { words }
             TrainingMode.NEW_ONLY -> words.filter { it.id in zeroAttemptWordIds }
-            TrainingMode.FRESH_WORDS -> words.filter { it.id in freshWordIds }.ifEmpty { words }
+            TrainingMode.FRESH_WORDS -> words.filter { it.id in freshAttemptIds }.ifEmpty { words }
             TrainingMode.MIXED -> {
                 val hard = words.filter { it.id in hardWordIds }
                 val pool = (hard + words).distinctBy { it.id }
