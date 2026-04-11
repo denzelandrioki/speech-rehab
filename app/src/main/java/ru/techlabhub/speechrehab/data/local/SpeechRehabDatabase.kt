@@ -6,36 +6,36 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import ru.techlabhub.speechrehab.data.local.seed.VocabularyCatalog
 import ru.techlabhub.speechrehab.data.local.dao.AnswerAttemptDao
-import ru.techlabhub.speechrehab.data.local.dao.CachedImageDao
 import ru.techlabhub.speechrehab.data.local.dao.CategoryDao
 import ru.techlabhub.speechrehab.data.local.dao.TrainingSessionDao
 import ru.techlabhub.speechrehab.data.local.dao.WordDao
+import ru.techlabhub.speechrehab.data.local.dao.WordImageVariantDao
 import ru.techlabhub.speechrehab.data.local.entity.AnswerAttemptEntity
-import ru.techlabhub.speechrehab.data.local.entity.CachedImageEntity
 import ru.techlabhub.speechrehab.data.local.entity.CategoryEntity
 import ru.techlabhub.speechrehab.data.local.entity.TrainingSessionEntity
 import ru.techlabhub.speechrehab.data.local.entity.WordEntity
+import ru.techlabhub.speechrehab.data.local.entity.WordImageVariantEntity
 
 /**
- * Локальная база Room: категории, слова, кэш путей картинок, сессии тренировок, попытки ответов.
+ * Локальная база Room: категории, слова, варианты картинок на слово, сессии тренировок, попытки ответов.
  *
- * Версия 3: [WordEntity.displayTextRu], [WordEntity.displayTextEn], [WordEntity.bundledAssetName] (миграция [MIGRATION_2_3]).
+ * Версия 4: `cached_images` → [WordImageVariantEntity] ([MIGRATION_3_4]).
  */
 @Database(
     entities = [
         CategoryEntity::class,
         WordEntity::class,
-        CachedImageEntity::class,
+        WordImageVariantEntity::class,
         TrainingSessionEntity::class,
         AnswerAttemptEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class SpeechRehabDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun wordDao(): WordDao
-    abstract fun cachedImageDao(): CachedImageDao
+    abstract fun wordImageVariantDao(): WordImageVariantDao
     abstract fun trainingSessionDao(): TrainingSessionDao
     abstract fun answerAttemptDao(): AnswerAttemptDao
 
@@ -88,6 +88,45 @@ abstract class SpeechRehabDatabase : RoomDatabase() {
                     db.execSQL("ALTER TABLE words_new RENAME TO words")
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_words_categoryId` ON `words` (`categoryId`)")
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_words_enabled` ON `words` (`enabled`)")
+                }
+            }
+
+        /**
+         * Несколько изображений на слово: новая таблица, данные из `cached_images` переносятся построчно
+         * (fetchSignature = remoteUrl для уже сохранённых строк).
+         */
+        val MIGRATION_3_4: Migration =
+            object : Migration(3, 4) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS `word_image_variants` (
+                          `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                          `wordId` INTEGER NOT NULL,
+                          `remoteUrl` TEXT NOT NULL,
+                          `localFilePath` TEXT NOT NULL,
+                          `sourceName` TEXT NOT NULL,
+                          `fetchSignature` TEXT NOT NULL,
+                          `wasShown` INTEGER NOT NULL DEFAULT 0,
+                          `lastShownAtEpochMillis` INTEGER NOT NULL DEFAULT 0,
+                          `createdAtEpochMillis` INTEGER NOT NULL,
+                          FOREIGN KEY(`wordId`) REFERENCES `words`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                        )
+                        """.trimIndent(),
+                    )
+                    db.execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_word_image_variants_wordId` ON `word_image_variants` (`wordId`)",
+                    )
+                    db.execSQL(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS `index_word_image_variants_wordId_fetchSignature` ON `word_image_variants` (`wordId`, `fetchSignature`)",
+                    )
+                    db.execSQL(
+                        """
+                        INSERT INTO word_image_variants (wordId, remoteUrl, localFilePath, sourceName, fetchSignature, wasShown, lastShownAtEpochMillis, createdAtEpochMillis)
+                        SELECT wordId, remoteUrl, localFilePath, sourceName, remoteUrl, 0, 0, updatedAtEpochMillis FROM cached_images
+                        """.trimIndent(),
+                    )
+                    db.execSQL("DROP TABLE cached_images")
                 }
             }
     }

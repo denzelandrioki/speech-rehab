@@ -6,6 +6,7 @@ import ru.techlabhub.speechrehab.data.local.SpeechRehabDatabase
 import ru.techlabhub.speechrehab.data.mapper.toCategory
 import ru.techlabhub.speechrehab.domain.model.AppLanguage
 import ru.techlabhub.speechrehab.domain.model.Category
+import ru.techlabhub.speechrehab.domain.model.ImageRotationMode
 import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
 import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
@@ -98,6 +99,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setPreferredImageMode(mode: PreferredImageMode) {
         viewModelScope.launch { prefs.setPreferredImageMode(mode) }
+    }
+
+    fun setImageRotationMode(mode: ImageRotationMode) {
+        viewModelScope.launch { prefs.setImageRotationMode(mode) }
     }
 
     fun setRefreshRemoteWhenNoLocalImage(value: Boolean) {

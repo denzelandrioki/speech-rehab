@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import ru.techlabhub.speechrehab.domain.model.AppLanguage
+import ru.techlabhub.speechrehab.domain.model.ImageRotationMode
 import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
 import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
@@ -46,6 +47,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         val onlineImageFetching = stringPreferencesKey("online_image_fetching")
         val preferredImageMode = stringPreferencesKey("preferred_image_mode")
         val refreshRemoteWhenNoLocalImage = booleanPreferencesKey("refresh_remote_when_no_local_image")
+        val imageRotationMode = stringPreferencesKey("image_rotation_mode")
     }
 
     override val preferencesFlow: Flow<UserTrainingPreferences> =
@@ -64,6 +66,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
             val prefImg =
                 runCatching { PreferredImageMode.valueOf(p[Keys.preferredImageMode] ?: "") }
                     .getOrDefault(PreferredImageMode.LOCAL_THEN_REMOTE)
+            val rotation =
+                runCatching { ImageRotationMode.valueOf(p[Keys.imageRotationMode] ?: "") }
+                    .getOrDefault(ImageRotationMode.REUSE_LOCAL_FIRST)
             UserTrainingPreferences(
                 showWordHint = p[Keys.showHint] ?: true,
                 batchSize = (p[Keys.batchSize] ?: 12).coerceIn(4, 40),
@@ -77,6 +82,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
                 onlineImageFetchingMode = onlineFetch,
                 preferredImageMode = prefImg,
                 refreshRemoteWhenNoLocalImage = p[Keys.refreshRemoteWhenNoLocalImage] ?: true,
+                imageRotationMode = rotation,
             )
         }
 
@@ -126,5 +132,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setRefreshRemoteWhenNoLocalImage(value: Boolean) {
         ds.edit { it[Keys.refreshRemoteWhenNoLocalImage] = value }
+    }
+
+    override suspend fun setImageRotationMode(mode: ImageRotationMode) {
+        ds.edit { it[Keys.imageRotationMode] = mode.name }
     }
 }

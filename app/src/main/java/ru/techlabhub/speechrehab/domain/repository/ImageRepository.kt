@@ -1,6 +1,7 @@
 package ru.techlabhub.speechrehab.domain.repository
 
 import ru.techlabhub.speechrehab.domain.model.ImageCard
+import ru.techlabhub.speechrehab.domain.model.ImageFetchPolicy
 import ru.techlabhub.speechrehab.domain.model.WordItem
 
 /**
@@ -13,5 +14,9 @@ interface ImageRepository {
     suspend fun resolveCard(
         word: WordItem,
         prefs: UserTrainingPreferences,
+        fetchPolicy: ImageFetchPolicy = ImageFetchPolicy.NORMAL,
     ): ImageCard
+
+    /** Отметить показ варианта из [word_image_variants] (см. [ImageCard.wordImageVariantId]). */
+    suspend fun markImageVariantShown(variantId: Long?)
 }

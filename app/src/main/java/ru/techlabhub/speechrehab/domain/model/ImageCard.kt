@@ -11,4 +11,6 @@ data class ImageCard(
     val remoteUrl: String?,
     val source: ImageSource,
     val fromOfflineCache: Boolean,
+    /** Строка в [word_image_variants] для отметки показа; null у bundled / без файла. */
+    val wordImageVariantId: Long? = null,
 )

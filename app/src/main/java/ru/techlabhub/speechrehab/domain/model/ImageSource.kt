@@ -6,7 +6,7 @@ package ru.techlabhub.speechrehab.domain.model
 enum class ImageSource {
     /** Встроенный asset (offline). */
     BUNDLED,
-    /** Файл из файлового кэша / запись Room cached_images. */
+    /** Файл из файлового кэша / запись Room word_image_variants. */
     LOCAL_CACHE,
     ARASAAC,
     PIXABAY,

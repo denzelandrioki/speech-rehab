@@ -11,7 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * Предоставляет singleton [SpeechRehabDatabase] (Room) с именем файла `speech_rehab.db` и миграцией [SpeechRehabDatabase.MIGRATION_1_2].
+ * Предоставляет singleton [SpeechRehabDatabase] (Room) с именем файла `speech_rehab.db` и цепочкой миграций.
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -28,6 +28,7 @@ object DatabaseModule {
         ).addMigrations(
             SpeechRehabDatabase.MIGRATION_1_2,
             SpeechRehabDatabase.MIGRATION_2_3,
+            SpeechRehabDatabase.MIGRATION_3_4,
         )
             .build()
 }

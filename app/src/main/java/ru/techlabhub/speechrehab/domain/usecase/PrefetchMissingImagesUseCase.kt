@@ -1,5 +1,6 @@
 package ru.techlabhub.speechrehab.domain.usecase
 
+import ru.techlabhub.speechrehab.domain.model.ImageFetchPolicy
 import ru.techlabhub.speechrehab.domain.model.ImageSource
 import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
 import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
@@ -42,7 +43,7 @@ class PrefetchMissingImagesUseCase @Inject constructor(
         var stillNone = 0
         for (word in words) {
             yield()
-            val card = imageRepository.resolveCard(word, prefs)
+            val card = imageRepository.resolveCard(word, prefs, ImageFetchPolicy.PREFER_EXISTING_LOCAL)
             if (card.source == ImageSource.NONE && card.imageUri == null) {
                 stillNone++
             } else {

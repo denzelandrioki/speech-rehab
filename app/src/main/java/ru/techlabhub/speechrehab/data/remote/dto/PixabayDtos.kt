@@ -10,6 +10,7 @@ data class PixabaySearchResponse(
 
 @Serializable
 data class PixabayHitDto(
+    val id: Long? = null,
     @SerialName("largeImageURL") val largeImageUrl: String? = null,
     @SerialName("webformatURL") val webformatUrl: String? = null,
 )

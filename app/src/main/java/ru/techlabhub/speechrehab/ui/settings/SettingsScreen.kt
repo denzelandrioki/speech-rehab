@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.domain.model.AppLanguage
+import ru.techlabhub.speechrehab.domain.model.ImageRotationMode
 import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
 import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
@@ -131,6 +132,21 @@ fun SettingsScreen(
                     selected = prefs.preferredImageMode == mode,
                     onClick = { vm.setPreferredImageMode(mode) },
                     label = { Text(preferredImageModeLabel(mode)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Text(stringResource(R.string.settings_image_rotation_section), style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(R.string.settings_image_rotation_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            ImageRotationMode.values().forEach { mode ->
+                FilterChip(
+                    selected = prefs.imageRotationMode == mode,
+                    onClick = { vm.setImageRotationMode(mode) },
+                    label = { Text(imageRotationModeLabel(mode)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -262,6 +278,14 @@ private fun preferredImageModeLabel(mode: PreferredImageMode): String =
         PreferredImageMode.CACHED_FIRST -> stringResource(R.string.pref_img_cached_first)
         PreferredImageMode.LOCAL_ONLY -> stringResource(R.string.pref_img_local_only)
         PreferredImageMode.LOCAL_THEN_REMOTE -> stringResource(R.string.pref_img_local_then_remote)
+    }
+
+@Composable
+private fun imageRotationModeLabel(mode: ImageRotationMode): String =
+    when (mode) {
+        ImageRotationMode.REUSE_LOCAL_FIRST -> stringResource(R.string.image_rotation_reuse_local)
+        ImageRotationMode.PREFER_NEW_REMOTE -> stringResource(R.string.image_rotation_prefer_new)
+        ImageRotationMode.ALWAYS_TRY_NEW_REMOTE -> stringResource(R.string.image_rotation_always_new)
     }
 
 @Composable

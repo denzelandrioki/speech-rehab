@@ -1,6 +1,7 @@
 package ru.techlabhub.speechrehab.domain.repository
 
 import ru.techlabhub.speechrehab.domain.model.AppLanguage
+import ru.techlabhub.speechrehab.domain.model.ImageRotationMode
 import ru.techlabhub.speechrehab.domain.model.OnlineImageFetchingMode
 import ru.techlabhub.speechrehab.domain.model.PreferredImageMode
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
@@ -30,6 +31,8 @@ data class UserTrainingPreferences(
      * Не связано с [TrainingMode.NEW_ONLY] (новые слова по попыткам — отдельный конвейер).
      */
     val refreshRemoteWhenNoLocalImage: Boolean = true,
+    /** Подбор новой иллюстрации для того же слова (не путать с [TrainingMode]). */
+    val imageRotationMode: ImageRotationMode = ImageRotationMode.REUSE_LOCAL_FIRST,
 )
 
 /** Чтение и запись пользовательских настроек (реактивно через [preferencesFlow]). */
@@ -55,4 +58,6 @@ interface UserPreferencesRepository {
     suspend fun setPreferredImageMode(mode: PreferredImageMode)
 
     suspend fun setRefreshRemoteWhenNoLocalImage(value: Boolean)
+
+    suspend fun setImageRotationMode(mode: ImageRotationMode)
 }

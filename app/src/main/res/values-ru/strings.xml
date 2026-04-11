@@ -87,6 +87,12 @@
     <string name="pref_img_local_only">Только локально (без загрузки)</string>
     <string name="pref_img_local_then_remote">Сначала локально, потом сеть</string>
 
+    <string name="settings_image_rotation_section">Разнообразие картинок (одно слово)</string>
+    <string name="settings_image_rotation_hint">Не меняет выбор слова — только стараться ли каждый раз подобрать новую картинку из интернета для того же слова.</string>
+    <string name="image_rotation_reuse_local">Сначала уже сохранённая картинка</string>
+    <string name="image_rotation_prefer_new">По возможности новая из интернета</string>
+    <string name="image_rotation_always_new">Сначала всегда искать новую в интернете</string>
+
     <string name="screen_vocabulary">Словарь</string>
 
     <string name="category_furniture">Мебель</string>

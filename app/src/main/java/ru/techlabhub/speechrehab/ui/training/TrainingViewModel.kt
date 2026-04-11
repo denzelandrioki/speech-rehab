@@ -7,6 +7,7 @@ import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.di.ApplicationScope
 import ru.techlabhub.speechrehab.domain.model.ImageCard
 import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
+import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.TrainingRepository
 import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.usecase.GetNextTrainingCardUseCase
@@ -55,6 +56,7 @@ class TrainingViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
     private val getNextTrainingCard: GetNextTrainingCardUseCase,
+    private val imageRepository: ImageRepository,
     private val trainingRepository: TrainingRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
@@ -112,6 +114,9 @@ class TrainingViewModel @Inject constructor(
                     "TrainingScreen: no card emptyReason=%s (not an image issue unless word was picked)",
                     outcome.emptyReason.name,
                 )
+            }
+            if (card != null) {
+                imageRepository.markImageVariantShown(card.wordImageVariantId)
             }
             _ui.update {
                 it.copy(

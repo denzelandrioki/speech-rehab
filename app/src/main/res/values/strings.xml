@@ -87,6 +87,12 @@
     <string name="pref_img_local_only">Local only (no download)</string>
     <string name="pref_img_local_then_remote">Local first, then online</string>
 
+    <string name="settings_image_rotation_section">Picture variety (same word)</string>
+    <string name="settings_image_rotation_hint">Does not change which word is chosen — only whether to fetch a new online image when you see the word again.</string>
+    <string name="image_rotation_reuse_local">Reuse saved picture first</string>
+    <string name="image_rotation_prefer_new">Prefer a new online image when possible</string>
+    <string name="image_rotation_always_new">Always try a new online image first</string>
+
     <string name="screen_vocabulary">Vocabulary</string>
 
     <string name="category_furniture">Furniture</string>

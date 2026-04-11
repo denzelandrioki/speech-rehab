@@ -6,13 +6,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Локальный файловый кэш + запись в Room `cached_images`.
+ * Локальные файлы из [word_image_variants] + проверка читаемости на диске.
  */
 interface CachedFileImageDataSource {
     suspend fun tryLoadCached(wordId: Long): CachedImageResult?
 }
 
 data class CachedImageResult(
+    val variantId: Long,
     val localFilePath: String,
     val remoteUrl: String?,
     val sourceName: String,
@@ -24,15 +25,20 @@ class DefaultCachedFileImageDataSource @Inject constructor(
     private val cacheStore: LocalImageCacheStore,
 ) : CachedFileImageDataSource {
 
-    private val dao get() = db.cachedImageDao()
+    private val dao get() = db.wordImageVariantDao()
 
     override suspend fun tryLoadCached(wordId: Long): CachedImageResult? {
-        val row = dao.getForWord(wordId) ?: return null
-        if (!cacheStore.existsReadable(row.localFilePath)) return null
+        val rows = dao.listForWord(wordId)
+        if (rows.isEmpty()) return null
+        val picked =
+            RemoteImageCandidatePicker.pickLocalFallbackVariant(rows) { path ->
+                cacheStore.existsReadable(path)
+            } ?: return null
         return CachedImageResult(
-            localFilePath = row.localFilePath,
-            remoteUrl = row.remoteUrl,
-            sourceName = row.sourceName,
+            variantId = picked.id,
+            localFilePath = picked.localFilePath,
+            remoteUrl = picked.remoteUrl,
+            sourceName = picked.sourceName,
         )
     }
 }

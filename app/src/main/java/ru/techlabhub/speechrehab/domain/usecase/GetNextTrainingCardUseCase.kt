@@ -3,6 +3,7 @@ package ru.techlabhub.speechrehab.domain.usecase
 import ru.techlabhub.speechrehab.data.local.SpeechRehabDatabase
 import ru.techlabhub.speechrehab.domain.analytics.CardWeightEngine
 import ru.techlabhub.speechrehab.domain.model.ImageCard
+import ru.techlabhub.speechrehab.domain.model.ImageFetchPolicy
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
 import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
@@ -131,7 +132,7 @@ class GetNextTrainingCardUseCase @Inject constructor(
         val picked = CardWeightEngine.pickWeighted(weighted) ?: return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NONE)
 
         Timber.d("NextTrainingCard: selectedWord id=%d text=%s → resolveCard", picked.id, picked.text)
-        val card: ImageCard = imageRepository.resolveCard(picked, prefs)
+        val card: ImageCard = imageRepository.resolveCard(picked, prefs, ImageFetchPolicy.NORMAL)
         return GetNextTrainingCardOutcome(card, NextTrainingCardEmptyReason.NONE)
     }
 }

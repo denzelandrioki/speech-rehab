@@ -9,6 +9,7 @@ data class PexelsSearchResponse(
 
 @Serializable
 data class PexelsPhotoDto(
+    val id: Long? = null,
     val src: PexelsSrcDto? = null,
 )
 

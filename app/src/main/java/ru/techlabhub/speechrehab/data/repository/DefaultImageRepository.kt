@@ -2,6 +2,7 @@ package ru.techlabhub.speechrehab.data.repository
 
 import ru.techlabhub.speechrehab.data.image.OfflineFirstImageResolver
 import ru.techlabhub.speechrehab.domain.model.ImageCard
+import ru.techlabhub.speechrehab.domain.model.ImageFetchPolicy
 import ru.techlabhub.speechrehab.domain.model.WordItem
 import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
@@ -17,8 +18,20 @@ class DefaultImageRepository @Inject constructor(
     override suspend fun resolveCard(
         word: WordItem,
         prefs: UserTrainingPreferences,
+        fetchPolicy: ImageFetchPolicy,
     ): ImageCard {
-        Timber.d("ImageRepository.resolveCard started wordId=%d text=%s", word.id, word.text)
-        return offlineFirstImageResolver.resolve(word, prefs)
+        Timber.d(
+            "ImageRepository.resolveCard wordId=%d text=%s fetchPolicy=%s rotation=%s",
+            word.id,
+            word.text,
+            fetchPolicy.name,
+            prefs.imageRotationMode.name,
+        )
+        return offlineFirstImageResolver.resolve(word, prefs, fetchPolicy)
+    }
+
+    override suspend fun markImageVariantShown(variantId: Long?) {
+        if (variantId == null) return
+        offlineFirstImageResolver.markVariantShown(variantId)
     }
 }
