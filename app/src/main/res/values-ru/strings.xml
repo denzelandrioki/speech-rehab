@@ -58,6 +58,9 @@
     <string name="source_pexels">Pexels (нужен ключ API)</string>
     <string name="settings_categories_section">Категории (пусто = все включены)</string>
 
+    <string name="settings_build_info_section">О сборке</string>
+    <string name="settings_build_details">Версия %1$s (код %2$d) · %3$s</string>
+
     <string name="settings_app_language_section">Язык приложения</string>
     <string name="lang_system">Как в системе</string>
     <string name="lang_russian">Русский</string>

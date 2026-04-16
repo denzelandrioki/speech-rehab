@@ -26,8 +26,8 @@ android {
         applicationId = "ru.techlabhub.speechrehab"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-mvp"
+        versionCode = 2
+        versionName = "0.1.0-beta1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField(
             "String",
@@ -42,8 +42,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BUILD_KIND", "\"debug\"")
+        }
         release {
             isMinifyEnabled = false
+            isShrinkResources = false
+            // Закрытый тест друзьям: тот же ключ, что debug. Перед магазином — отдельный keystore.
+            signingConfig = signingConfigs.getByName("debug")
+            buildConfigField("String", "BUILD_KIND", "\"release\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

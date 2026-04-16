@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import ru.techlabhub.speechrehab.BuildConfig
 import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.domain.model.AppLanguage
 import ru.techlabhub.speechrehab.domain.model.ImageRotationMode
@@ -250,6 +251,18 @@ fun SettingsScreen(
                     Text(categoryTitle(c.name), style = MaterialTheme.typography.bodyLarge)
                 }
             }
+
+            Text(stringResource(R.string.settings_build_info_section), style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(
+                    R.string.settings_build_details,
+                    BuildConfig.VERSION_NAME,
+                    BuildConfig.VERSION_CODE,
+                    BuildConfig.BUILD_KIND,
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

@@ -58,6 +58,9 @@
     <string name="source_pexels">Pexels (API key required)</string>
     <string name="settings_categories_section">Categories (empty = all enabled)</string>
 
+    <string name="settings_build_info_section">About this build</string>
+    <string name="settings_build_details">Version %1$s (code %2$d) · %3$s</string>
+
     <string name="settings_app_language_section">App language</string>
     <string name="lang_system">System</string>
     <string name="lang_russian">Russian</string>
