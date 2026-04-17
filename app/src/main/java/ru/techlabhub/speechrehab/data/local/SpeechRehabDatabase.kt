@@ -7,19 +7,21 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import ru.techlabhub.speechrehab.data.local.seed.VocabularyCatalog
 import ru.techlabhub.speechrehab.data.local.dao.AnswerAttemptDao
 import ru.techlabhub.speechrehab.data.local.dao.CategoryDao
+import ru.techlabhub.speechrehab.data.local.dao.MultipleChoiceAttemptDao
 import ru.techlabhub.speechrehab.data.local.dao.TrainingSessionDao
 import ru.techlabhub.speechrehab.data.local.dao.WordDao
 import ru.techlabhub.speechrehab.data.local.dao.WordImageVariantDao
 import ru.techlabhub.speechrehab.data.local.entity.AnswerAttemptEntity
 import ru.techlabhub.speechrehab.data.local.entity.CategoryEntity
+import ru.techlabhub.speechrehab.data.local.entity.MultipleChoiceAttemptEntity
 import ru.techlabhub.speechrehab.data.local.entity.TrainingSessionEntity
 import ru.techlabhub.speechrehab.data.local.entity.WordEntity
 import ru.techlabhub.speechrehab.data.local.entity.WordImageVariantEntity
 
 /**
- * Локальная база Room: категории, слова, варианты картинок на слово, сессии тренировок, попытки ответов.
+ * Локальная база Room: категории, слова, варианты картинок, сессии, попытки assisted, multiple choice.
  *
- * Версия 4: `cached_images` → [WordImageVariantEntity] ([MIGRATION_3_4]).
+ * Версия 5: [TrainingSessionEntity.sessionKind], таблица [MultipleChoiceAttemptEntity] ([MIGRATION_4_5]).
  */
 @Database(
     entities = [
@@ -28,8 +30,9 @@ import ru.techlabhub.speechrehab.data.local.entity.WordImageVariantEntity
         WordImageVariantEntity::class,
         TrainingSessionEntity::class,
         AnswerAttemptEntity::class,
+        MultipleChoiceAttemptEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 abstract class SpeechRehabDatabase : RoomDatabase() {
@@ -38,6 +41,7 @@ abstract class SpeechRehabDatabase : RoomDatabase() {
     abstract fun wordImageVariantDao(): WordImageVariantDao
     abstract fun trainingSessionDao(): TrainingSessionDao
     abstract fun answerAttemptDao(): AnswerAttemptDao
+    abstract fun multipleChoiceAttemptDao(): MultipleChoiceAttemptDao
 
     companion object {
         /** Добавление русских подписей к существующим строкам словаря без потери данных. */
@@ -127,6 +131,49 @@ abstract class SpeechRehabDatabase : RoomDatabase() {
                         """.trimIndent(),
                     )
                     db.execSQL("DROP TABLE cached_images")
+                }
+            }
+
+        /** Тип сессии + попытки самостоятельного режима (4 варианта). */
+        val MIGRATION_4_5: Migration =
+            object : Migration(4, 5) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL(
+                        "ALTER TABLE training_sessions ADD COLUMN sessionKind TEXT NOT NULL DEFAULT 'ASSISTED'",
+                    )
+                    db.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS `multiple_choice_attempts` (
+                          `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                          `sessionId` INTEGER,
+                          `questionWordId` INTEGER NOT NULL,
+                          `categoryId` INTEGER NOT NULL,
+                          `shownAtEpochMillis` INTEGER NOT NULL,
+                          `answeredAtEpochMillis` INTEGER NOT NULL,
+                          `responseTimeMillis` INTEGER NOT NULL,
+                          `selectedWordId` INTEGER NOT NULL,
+                          `isCorrect` INTEGER NOT NULL,
+                          `displayLanguageEffective` TEXT NOT NULL,
+                          `imageVariantId` INTEGER,
+                          `selectedLabelSnapshot` TEXT NOT NULL,
+                          FOREIGN KEY(`questionWordId`) REFERENCES `words`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+                          FOREIGN KEY(`selectedWordId`) REFERENCES `words`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+                          FOREIGN KEY(`sessionId`) REFERENCES `training_sessions`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL
+                        )
+                        """.trimIndent(),
+                    )
+                    db.execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_multiple_choice_attempts_questionWordId` ON `multiple_choice_attempts` (`questionWordId`)",
+                    )
+                    db.execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_multiple_choice_attempts_sessionId` ON `multiple_choice_attempts` (`sessionId`)",
+                    )
+                    db.execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_multiple_choice_attempts_answeredAtEpochMillis` ON `multiple_choice_attempts` (`answeredAtEpochMillis`)",
+                    )
+                    db.execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_multiple_choice_attempts_categoryId` ON `multiple_choice_attempts` (`categoryId`)",
+                    )
                 }
             }
     }

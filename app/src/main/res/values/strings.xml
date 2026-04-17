@@ -5,6 +5,7 @@
     <string name="home_title">Speech rehabilitation</string>
     <string name="home_subtitle">Large buttons. Few steps.</string>
     <string name="home_start_training">Start training</string>
+    <string name="home_start_mc_training">Self-study: pick 1 of 4</string>
     <string name="home_statistics">Statistics</string>
     <string name="home_settings">Settings</string>
     <string name="home_vocabulary">Vocabulary</string>
@@ -12,6 +13,12 @@
     <string name="cd_back">Back</string>
 
     <string name="screen_training">Training</string>
+    <string name="screen_mc_training">Pick the word (4 choices)</string>
+    <string name="mc_loading">Loading question…</string>
+    <string name="mc_next_question">Next</string>
+    <string name="mc_feedback_correct_is">Correct answer: %1$s</string>
+    <string name="mc_error_not_enough_words">Need at least four different words in the selected categories for this mode.</string>
+    <string name="mc_error_load">Could not load question</string>
     <string name="training_loading">Loading next card…</string>
     <string name="training_retry">Retry</string>
     <string name="training_correct">Correct</string>
@@ -25,6 +32,16 @@
 
     <string name="screen_statistics">Statistics</string>
     <string name="stats_no_data">No data yet.</string>
+    <string name="stats_section_assisted">Card training (assisted)</string>
+    <string name="stats_section_mc">Self-study (4 choices)</string>
+    <string name="stats_mc_no_data">No multiple-choice attempts yet.</string>
+    <string name="stats_mc_accuracy">Accuracy: %1$.1f%%</string>
+    <string name="stats_mc_avg_time">Average response time: %1$.0f ms</string>
+    <string name="stats_mc_hardest">Hardest words (self-study)</string>
+    <string name="stats_mc_confusion">Common mix-ups (correct → chosen)</string>
+    <string name="stats_mc_confusion_line">%1$s → %2$s · %3$d×</string>
+    <string name="stats_mc_wrong_picks">Wrong answers chosen most often</string>
+    <string name="stats_mc_wrong_line">%1$s · %2$d×</string>
     <string name="stats_overall_accuracy">Overall accuracy: %1$.1f%%</string>
     <string name="stats_attempts">Attempts: %1$d (correct %2$d)</string>
     <string name="stats_last_days">Last days (accuracy)</string>

@@ -25,6 +25,7 @@ import ru.techlabhub.speechrehab.R
 @Composable
 fun HomeScreen(
     onStartTraining: () -> Unit,
+    onStartMultipleChoice: () -> Unit,
     onOpenStatistics: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenVocabulary: () -> Unit,
@@ -49,6 +50,7 @@ fun HomeScreen(
         )
 
         HomeBigButton(text = stringResource(R.string.home_start_training), onClick = onStartTraining)
+        HomeBigButton(text = stringResource(R.string.home_start_mc_training), onClick = onStartMultipleChoice)
         HomeBigButton(text = stringResource(R.string.home_statistics), onClick = onOpenStatistics)
         HomeBigButton(text = stringResource(R.string.home_settings), onClick = onOpenSettings)
         HomeBigButton(text = stringResource(R.string.home_vocabulary), onClick = onOpenVocabulary)

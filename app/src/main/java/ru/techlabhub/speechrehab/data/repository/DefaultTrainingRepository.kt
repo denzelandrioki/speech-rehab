@@ -3,6 +3,7 @@ package ru.techlabhub.speechrehab.data.repository
 import ru.techlabhub.speechrehab.data.local.SpeechRehabDatabase
 import ru.techlabhub.speechrehab.data.local.entity.AnswerAttemptEntity
 import ru.techlabhub.speechrehab.data.local.entity.TrainingSessionEntity
+import ru.techlabhub.speechrehab.domain.model.SessionKind
 import ru.techlabhub.speechrehab.domain.repository.TrainingRepository
 import androidx.room.withTransaction
 import javax.inject.Inject
@@ -20,11 +21,12 @@ class DefaultTrainingRepository @Inject constructor(
     private val attempts = db.answerAttemptDao()
     private val words = db.wordDao()
 
-    override suspend fun startSession(): Long {
+    override suspend fun startSession(kind: SessionKind): Long {
         val id =
             sessions.insert(
                 TrainingSessionEntity(
                     startedAtEpochMillis = System.currentTimeMillis(),
+                    sessionKind = kind.name,
                 ),
             )
         return id

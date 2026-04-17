@@ -5,6 +5,7 @@ import ru.techlabhub.speechrehab.domain.analytics.CardWeightEngine
 import ru.techlabhub.speechrehab.domain.model.ImageCard
 import ru.techlabhub.speechrehab.domain.model.ImageFetchPolicy
 import ru.techlabhub.speechrehab.domain.model.TrainingMode
+import ru.techlabhub.speechrehab.domain.model.WordItem
 import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
 import ru.techlabhub.speechrehab.domain.repository.WordRepository
@@ -30,18 +31,7 @@ data class GetNextTrainingCardOutcome(
 /**
  * Сценарий выбора следующей карточки для тренировки.
  *
- * **Шаги:**
- * 1. Убедиться, что словарь засеян ([WordRepository.ensureSeededIfEmpty]).
- * 2. Получить пул слов по включённым категориям из настроек.
- *    Режим [TrainingMode.NEW_ONLY] фильтрует только этот пул (0 попыток); картинки не при чём —
- *    при пустом пуле [ImageRepository] не вызывается. Дозагрузка изображений для «старых» слов
- *    выполняется в [ImageRepository.resolveCard] после того, как слово уже выбрано.
- * 3. Загрузить из БД: «сложные» слова, [zeroAttemptIds] (COUNT&lt;1 ⇒ 0 попыток), [freshAttemptIds] (COUNT&lt;2 ⇒ 0–1 попытка) — раздельно для [TrainingMode.NEW_ONLY] и [TrainingMode.FRESH_WORDS].
- * 4. Отфильтровать пул через [CardWeightEngine.filterByMode], исключить предыдущее слово при возможности.
- * 5. Назначить каждому кандидату вес: чем больше суммарных попыток при слабой серии верных — тем выше приоритет
- *    (эвристика вместо отдельного счётчика ошибок).
- * 6. Случайно выбрать слово с учётом весов ([CardWeightEngine.pickWeighted]).
- * 7. Получить картинку: [ImageRepository.resolveCard] (offline-first; при отсутствии файла — заглушка в UI).
+ * **Шаги:** см. [pickNextWord] + загрузка изображения.
  */
 @Singleton
 class GetNextTrainingCardUseCase @Inject constructor(
@@ -52,10 +42,14 @@ class GetNextTrainingCardUseCase @Inject constructor(
     private val answers = db.answerAttemptDao()
     private val words = db.wordDao()
 
-    suspend operator fun invoke(
+    /**
+     * Выбор следующего слова по тем же правилам, что и для карточки (без загрузки картинки).
+     * Используется assisted-экраном и режимом multiple choice.
+     */
+    suspend fun pickNextWord(
         prefs: UserTrainingPreferences,
         lastWordId: Long?,
-    ): GetNextTrainingCardOutcome {
+    ): Pair<WordItem?, NextTrainingCardEmptyReason> {
         wordRepository.ensureSeededIfEmpty()
 
         val pool = wordRepository.getEnabledWordsForTraining(prefs.enabledCategoryIds)
@@ -64,16 +58,14 @@ class GetNextTrainingCardUseCase @Inject constructor(
                 "NextTrainingCard: selectedMode=%s poolSize=0 (no enabled words in categories)",
                 prefs.trainingMode.name,
             )
-            return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NO_ENABLED_WORDS)
+            return null to NextTrainingCardEmptyReason.NO_ENABLED_WORDS
         }
 
         val hardIds =
             answers.hardestWords(minAttempts = 2, limit = 40)
                 .map { it.wordId }
                 .toSet()
-        // COUNT(*) < 1 ⇒ только 0 попыток — исключительно для NEW_ONLY
         val zeroAttemptIds = words.wordIdsWithTotalAttemptsBelow(maxAttempts = 1).toSet()
-        // COUNT(*) < 2 ⇒ 0 или 1 попытка — исключительно для FRESH_WORDS (не подставлять в NEW_ONLY)
         val freshAttemptIds = words.wordIdsWithTotalAttemptsBelow(maxAttempts = 2).toSet()
         val zeroInPool = pool.count { it.id in zeroAttemptIds }
         Timber.d(
@@ -97,7 +89,7 @@ class GetNextTrainingCardUseCase @Inject constructor(
 
         if (prefs.trainingMode == TrainingMode.NEW_ONLY && modeAdjusted.isEmpty()) {
             Timber.i("NextTrainingCard: NEW_ONLY exhausted (no zero-attempt words in enabled pool)")
-            return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NEW_ONLY_EXHAUSTED)
+            return null to NextTrainingCardEmptyReason.NEW_ONLY_EXHAUSTED
         }
 
         val candidates =
@@ -109,18 +101,17 @@ class GetNextTrainingCardUseCase @Inject constructor(
         Timber.d("NextTrainingCard: candidatesForPick=%d lastWordId=%s", candidates.size, lastWordId)
 
         if (candidates.isEmpty()) {
-            return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NONE)
+            return null to NextTrainingCardEmptyReason.NONE
         }
 
         val ids = candidates.map { it.id }
         val counts = answers.attemptCountsForWords(ids).associate { it.wordId to it.cnt }
         val weighted =
             candidates.map { w ->
-                val incorrectEstimate = counts[w.id]?.let { total ->
-                    // Отдельного поля «число ошибок» в БД нет: оцениваем как (все попытки − подряд идущие верные),
-                    // чтобы чаще показывать слова с нестабильным результатом.
-                    (total - w.consecutiveCorrect).coerceAtLeast(0)
-                } ?: 0
+                val incorrectEstimate =
+                    counts[w.id]?.let { total ->
+                        (total - w.consecutiveCorrect).coerceAtLeast(0)
+                    } ?: 0
                 val wgt =
                     CardWeightEngine.computeWeight(
                         word = w,
@@ -129,9 +120,22 @@ class GetNextTrainingCardUseCase @Inject constructor(
                 CardWeightEngine.WeightedWord(word = w, weight = wgt)
             }
 
-        val picked = CardWeightEngine.pickWeighted(weighted) ?: return GetNextTrainingCardOutcome(null, NextTrainingCardEmptyReason.NONE)
+        val picked =
+            CardWeightEngine.pickWeighted(weighted)
+                ?: return null to NextTrainingCardEmptyReason.NONE
 
-        Timber.d("NextTrainingCard: selectedWord id=%d text=%s → resolveCard", picked.id, picked.text)
+        Timber.d("NextTrainingCard: selectedWord id=%d text=%s", picked.id, picked.text)
+        return picked to NextTrainingCardEmptyReason.NONE
+    }
+
+    suspend operator fun invoke(
+        prefs: UserTrainingPreferences,
+        lastWordId: Long?,
+    ): GetNextTrainingCardOutcome {
+        val (picked, emptyReason) = pickNextWord(prefs, lastWordId)
+        if (picked == null) {
+            return GetNextTrainingCardOutcome(null, emptyReason)
+        }
         val card: ImageCard = imageRepository.resolveCard(picked, prefs, ImageFetchPolicy.NORMAL)
         return GetNextTrainingCardOutcome(card, NextTrainingCardEmptyReason.NONE)
     }

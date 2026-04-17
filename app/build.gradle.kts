@@ -1,8 +1,5 @@
 import java.util.Properties
 
-// Сборка вне app/build: на Windows реже блокируется R.jar (Защитник, индексация IDE, OneDrive).
-layout.buildDirectory.set(rootProject.layout.buildDirectory.dir("app-out"))
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)

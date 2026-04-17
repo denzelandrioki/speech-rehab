@@ -10,9 +10,10 @@
 
 ## Где лежит APK после сборки
 
-Из корня проекта (модуль `app` пишет артефакты в `build/app-out`):
+Стандартный вывод Gradle для модуля `app` (папка **`app/build/`**, не корень репозитория):
 
-`build/app-out/outputs/apk/release/app-release.apk`
+- debug: `app/build/outputs/apk/debug/app-debug.apk`
+- release: `app/build/outputs/apk/release/app-release.apk`
 
 Сборка **release** подписана **debug-keystore** (удобно для рассылки друзьям; не для Play Store).
 

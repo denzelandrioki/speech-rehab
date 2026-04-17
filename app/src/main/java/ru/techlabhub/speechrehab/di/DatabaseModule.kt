@@ -29,6 +29,7 @@ object DatabaseModule {
             SpeechRehabDatabase.MIGRATION_1_2,
             SpeechRehabDatabase.MIGRATION_2_3,
             SpeechRehabDatabase.MIGRATION_3_4,
+            SpeechRehabDatabase.MIGRATION_4_5,
         )
             .build()
 }

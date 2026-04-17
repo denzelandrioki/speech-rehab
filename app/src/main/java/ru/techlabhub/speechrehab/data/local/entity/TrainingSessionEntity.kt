@@ -9,4 +9,6 @@ data class TrainingSessionEntity(
     val startedAtEpochMillis: Long,
     val endedAtEpochMillis: Long? = null,
     val assistantNote: String? = null,
+    /** [ru.techlabhub.speechrehab.domain.model.SessionKind] в виде строки. */
+    val sessionKind: String = "ASSISTED",
 )

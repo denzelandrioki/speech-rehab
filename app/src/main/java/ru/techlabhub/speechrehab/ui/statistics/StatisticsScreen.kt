@@ -3,7 +3,9 @@ package ru.techlabhub.speechrehab.ui.statistics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -81,6 +83,11 @@ fun StatisticsScreen(
                 }
                 s != null -> {
                     Text(
+                        text = stringResource(R.string.stats_section_assisted),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
                         text = stringResource(R.string.stats_overall_accuracy, s.overallAccuracyPercent),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
@@ -152,6 +159,103 @@ fun StatisticsScreen(
                             progress = { (c.accuracyPercent / 100f).coerceIn(0f, 1f) },
                             modifier = Modifier.fillMaxWidth(),
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.stats_section_mc),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    val mc = s.multipleChoice
+                    if (mc == null) {
+                        Text(
+                            stringResource(R.string.stats_mc_no_data),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.stats_mc_accuracy, mc.accuracyPercent),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = stringResource(R.string.stats_attempts, mc.totalAttempts, mc.totalCorrect),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        mc.avgResponseTimeMillis?.let { avg ->
+                            Text(
+                                text = stringResource(R.string.stats_mc_avg_time, avg),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+
+                        Text(stringResource(R.string.stats_last_days), style = MaterialTheme.typography.titleMedium)
+                        val mcLastDays = mc.daily.takeLast(14)
+                        mcLastDays.forEach { d -> DailyRow(d) }
+
+                        Text(stringResource(R.string.stats_trends), style = MaterialTheme.typography.titleMedium)
+                        TrendLine(stringResource(R.string.stats_trend_window, 7), mc.trend7)
+
+                        Text(stringResource(R.string.stats_mc_hardest), style = MaterialTheme.typography.titleMedium)
+                        mc.hardestWords.forEach { w ->
+                            val line =
+                                WordDisplayFormatter.formatRank(
+                                    w.canonicalText,
+                                    w.displayTextRu,
+                                    w.displayTextEn,
+                                    cardTextMode,
+                                )
+                            Text(
+                                text = stringResource(R.string.stats_word_line, line, w.accuracyPercent, w.attempts),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+
+                        Text(stringResource(R.string.stats_categories), style = MaterialTheme.typography.titleMedium)
+                        mc.categoryProgress.forEach { c ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    text = categoryTitle(c.name),
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                Text(
+                                    text = "${"%.0f".format(c.accuracyPercent)}%",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                            }
+                            LinearProgressIndicator(
+                                progress = { (c.accuracyPercent / 100f).coerceIn(0f, 1f) },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+
+                        Text(stringResource(R.string.stats_mc_confusion), style = MaterialTheme.typography.titleMedium)
+                        mc.confusionPairs.forEach { p ->
+                            Text(
+                                text =
+                                    stringResource(
+                                        R.string.stats_mc_confusion_line,
+                                        p.correctLabel,
+                                        p.wrongLabel,
+                                        p.count,
+                                    ),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+
+                        Text(stringResource(R.string.stats_mc_wrong_picks), style = MaterialTheme.typography.titleMedium)
+                        mc.topWrongSelections.forEach { w ->
+                            Text(
+                                text = stringResource(R.string.stats_mc_wrong_line, w.label, w.count),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
                     }
                 }
             }

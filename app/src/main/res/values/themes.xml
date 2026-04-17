@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SpeechRehab" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Родитель AppCompat: иначе AppCompatDelegate / per-app locale ведут себя нестабильно с android:Theme.Material.* -->
+    <style name="Theme.SpeechRehab" parent="Theme.AppCompat.Light.NoActionBar" />
 </resources>

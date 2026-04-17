@@ -5,6 +5,7 @@
     <string name="home_title">Речевая реабилитация</string>
     <string name="home_subtitle">Крупные кнопки. Минимум шагов.</string>
     <string name="home_start_training">Начать тренировку</string>
+    <string name="home_start_mc_training">Самостоятельно: выбор из 4</string>
     <string name="home_statistics">Статистика</string>
     <string name="home_settings">Настройки</string>
     <string name="home_vocabulary">Словарь</string>
@@ -12,6 +13,12 @@
     <string name="cd_back">Назад</string>
 
     <string name="screen_training">Тренировка</string>
+    <string name="screen_mc_training">Выберите слово (4 варианта)</string>
+    <string name="mc_loading">Загрузка вопроса…</string>
+    <string name="mc_next_question">Дальше</string>
+    <string name="mc_feedback_correct_is">Правильный ответ: %1$s</string>
+    <string name="mc_error_not_enough_words">Для этого режима нужно минимум четыре разных слова в выбранных категориях.</string>
+    <string name="mc_error_load">Не удалось загрузить вопрос</string>
     <string name="training_loading">Загрузка следующей карточки…</string>
     <string name="training_retry">Повторить</string>
     <string name="training_correct">Правильно</string>
@@ -25,6 +32,16 @@
 
     <string name="screen_statistics">Статистика</string>
     <string name="stats_no_data">Пока нет данных.</string>
+    <string name="stats_section_assisted">Карточки (с ассистентом)</string>
+    <string name="stats_section_mc">Самостоятельно (4 варианта)</string>
+    <string name="stats_mc_no_data">Пока нет попыток в режиме «выбор из 4».</string>
+    <string name="stats_mc_accuracy">Точность: %1$.1f%%</string>
+    <string name="stats_mc_avg_time">Среднее время ответа: %1$.0f мс</string>
+    <string name="stats_mc_hardest">Сложные слова (самостоятельно)</string>
+    <string name="stats_mc_confusion">Частые путаницы (верно → выбрано)</string>
+    <string name="stats_mc_confusion_line">%1$s → %2$s · %3$d×</string>
+    <string name="stats_mc_wrong_picks">Чаще всего выбирали неправильно</string>
+    <string name="stats_mc_wrong_line">%1$s · %2$d×</string>
     <string name="stats_overall_accuracy">Общая точность: %1$.1f%%</string>
     <string name="stats_attempts">Попыток: %1$d (верно %2$d)</string>
     <string name="stats_last_days">Последние дни (точность)</string>

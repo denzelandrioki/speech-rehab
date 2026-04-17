@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import ru.techlabhub.speechrehab.R
 import ru.techlabhub.speechrehab.di.ApplicationScope
 import ru.techlabhub.speechrehab.domain.model.ImageCard
+import ru.techlabhub.speechrehab.domain.model.SessionKind
 import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import ru.techlabhub.speechrehab.domain.repository.ImageRepository
 import ru.techlabhub.speechrehab.domain.repository.TrainingRepository
@@ -19,7 +20,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -69,8 +72,16 @@ class TrainingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            sessionId = trainingRepository.startSession()
+            sessionId = trainingRepository.startSession(SessionKind.ASSISTED)
             loadNextCard()
+        }
+        viewModelScope.launch {
+            userPreferencesRepository.preferencesFlow
+                .map { it.trainingTextLanguage }
+                .distinctUntilChanged()
+                .collect { mode ->
+                    _ui.update { it.copy(trainingTextLanguage = mode) }
+                }
         }
     }
 

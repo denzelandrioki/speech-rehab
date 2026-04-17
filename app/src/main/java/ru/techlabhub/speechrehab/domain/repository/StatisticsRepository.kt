@@ -2,6 +2,7 @@ package ru.techlabhub.speechrehab.domain.repository
 
 import ru.techlabhub.speechrehab.domain.model.CategoryAggregate
 import ru.techlabhub.speechrehab.domain.model.DailyStats
+import ru.techlabhub.speechrehab.domain.model.MultipleChoiceStatsSnapshot
 import ru.techlabhub.speechrehab.domain.model.TrendResult
 import ru.techlabhub.speechrehab.domain.model.WeeklyStats
 import ru.techlabhub.speechrehab.domain.model.WordRank
@@ -19,6 +20,8 @@ data class StatisticsSnapshot(
     val trend7: TrendResult,
     val trend14: TrendResult,
     val trend30: TrendResult,
+    /** null, если ещё нет попыток в multiple choice. */
+    val multipleChoice: MultipleChoiceStatsSnapshot? = null,
 )
 
 /** Загрузка агрегированной статистики из БД (реализация считает SQL и тренды в домене). */

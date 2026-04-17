@@ -9,6 +9,7 @@ import ru.techlabhub.speechrehab.ui.home.HomeScreen
 import ru.techlabhub.speechrehab.ui.settings.SettingsScreen
 import ru.techlabhub.speechrehab.ui.statistics.StatisticsScreen
 import ru.techlabhub.speechrehab.ui.training.TrainingScreen
+import ru.techlabhub.speechrehab.ui.training.mc.MultipleChoiceTrainingScreen
 import ru.techlabhub.speechrehab.ui.vocabulary.VocabularyScreen
 
 /**
@@ -31,6 +32,7 @@ fun SpeechRehabNavHost(
         composable(Routes.Home) {
             HomeScreen(
                 onStartTraining = { navController.navigate(Routes.Training) },
+                onStartMultipleChoice = { navController.navigate(Routes.MultipleChoiceTraining) },
                 onOpenStatistics = { navController.navigate(Routes.Statistics) },
                 onOpenSettings = { navController.navigate(Routes.Settings) },
                 onOpenVocabulary = { navController.navigate(Routes.Vocabulary) },
@@ -38,6 +40,11 @@ fun SpeechRehabNavHost(
         }
         composable(Routes.Training) {
             TrainingScreen(
+                onExit = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.MultipleChoiceTraining) {
+            MultipleChoiceTrainingScreen(
                 onExit = { navController.popBackStack() },
             )
         }
