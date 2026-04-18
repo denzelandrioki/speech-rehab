@@ -21,17 +21,24 @@ class DefaultImageRepository @Inject constructor(
         fetchPolicy: ImageFetchPolicy,
     ): ImageCard {
         Timber.d(
-            "ImageRepository.resolveCard wordId=%d text=%s fetchPolicy=%s rotation=%s",
+            "ImageRepository.resolveCard wordId=%d text=%s fetchPolicy=%s rotation=%s preferred=%s online=%s refreshRemoteWhenNoLocal=%s",
             word.id,
             word.text,
             fetchPolicy.name,
             prefs.imageRotationMode.name,
+            prefs.preferredImageMode.name,
+            prefs.onlineImageFetchingMode.name,
+            prefs.refreshRemoteWhenNoLocalImage,
         )
         return offlineFirstImageResolver.resolve(word, prefs, fetchPolicy)
     }
 
     override suspend fun markImageVariantShown(variantId: Long?) {
-        if (variantId == null) return
+        if (variantId == null) {
+            Timber.v("ImageRepository.markImageVariantShown skipped (null — bundled or remote-only card)")
+            return
+        }
+        Timber.d("ImageRepository.markImageVariantShown variantId=%d", variantId)
         offlineFirstImageResolver.markVariantShown(variantId)
     }
 }

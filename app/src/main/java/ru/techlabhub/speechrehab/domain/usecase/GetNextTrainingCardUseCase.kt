@@ -124,7 +124,16 @@ class GetNextTrainingCardUseCase @Inject constructor(
             CardWeightEngine.pickWeighted(weighted)
                 ?: return null to NextTrainingCardEmptyReason.NONE
 
-        Timber.d("NextTrainingCard: selectedWord id=%d text=%s", picked.id, picked.text)
+        Timber.d(
+            "NextTrainingCard: selectedWord id=%d text=%s categoryId=%s imageRotation=%s preferredImage=%s onlineFetching=%s refreshRemoteWhenNoLocal=%s",
+            picked.id,
+            picked.text,
+            picked.categoryId,
+            prefs.imageRotationMode.name,
+            prefs.preferredImageMode.name,
+            prefs.onlineImageFetchingMode.name,
+            prefs.refreshRemoteWhenNoLocalImage,
+        )
         return picked to NextTrainingCardEmptyReason.NONE
     }
 
@@ -136,6 +145,15 @@ class GetNextTrainingCardUseCase @Inject constructor(
         if (picked == null) {
             return GetNextTrainingCardOutcome(null, emptyReason)
         }
+        Timber.d(
+            "NextTrainingCard: resolveCard prefs snapshot rotation=%s preferred=%s online=%s arasaac=%s pixabay=%s pexels=%s",
+            prefs.imageRotationMode.name,
+            prefs.preferredImageMode.name,
+            prefs.onlineImageFetchingMode.name,
+            prefs.arasaacEnabled,
+            prefs.pixabayEnabled,
+            prefs.pexelsEnabled,
+        )
         val card: ImageCard = imageRepository.resolveCard(picked, prefs, ImageFetchPolicy.NORMAL)
         return GetNextTrainingCardOutcome(card, NextTrainingCardEmptyReason.NONE)
     }

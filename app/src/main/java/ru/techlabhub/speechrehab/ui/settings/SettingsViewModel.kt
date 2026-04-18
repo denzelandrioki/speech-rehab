@@ -102,7 +102,11 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setImageRotationMode(mode: ImageRotationMode) {
-        viewModelScope.launch { prefs.setImageRotationMode(mode) }
+        Timber.i("Settings: imageRotationMode selected=%s (persisting)", mode.name)
+        viewModelScope.launch {
+            prefs.setImageRotationMode(mode)
+            Timber.i("Settings: imageRotationMode saved=%s", mode.name)
+        }
     }
 
     fun setRefreshRemoteWhenNoLocalImage(value: Boolean) {

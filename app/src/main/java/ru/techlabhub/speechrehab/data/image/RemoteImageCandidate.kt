@@ -10,6 +10,10 @@ data class RemoteImageCandidate(
     val source: ImageSource,
     val externalId: String?,
 ) {
+    /**
+     * Уникальность в пределах слова в БД: провайдер + стабильный внешний id, иначе нормализованный URL.
+     * Разные картинки с разными id/url не должны схлопываться; один и тот же объект из API — тот же ключ.
+     */
     fun fetchSignature(): String {
         val key = externalId?.takeIf { it.isNotBlank() } ?: imageUrl.trim()
         return "${source.name}:$key"

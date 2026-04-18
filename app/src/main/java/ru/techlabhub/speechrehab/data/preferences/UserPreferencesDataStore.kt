@@ -16,6 +16,7 @@ import ru.techlabhub.speechrehab.domain.model.TrainingTextLanguage
 import ru.techlabhub.speechrehab.domain.repository.UserPreferencesRepository
 import ru.techlabhub.speechrehab.domain.repository.UserTrainingPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import timber.log.Timber
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -135,6 +136,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun setImageRotationMode(mode: ImageRotationMode) {
+        Timber.d("DataStore: persist image_rotation_mode=%s", mode.name)
         ds.edit { it[Keys.imageRotationMode] = mode.name }
     }
 }

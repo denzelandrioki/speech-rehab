@@ -23,11 +23,14 @@ private enum class LocalImageStep {
 }
 
 /**
- * Offline-first: bundled → файловый кэш → (опционально) удалённые API с сохранением в [word_image_variants].
+ * Offline-first: при обычной политике — bundled → файловый кэш → (опционально) удалённые API.
  *
- * [ImageRotationMode.PREFER_NEW_REMOTE] / [ImageRotationMode.ALWAYS_TRY_NEW_REMOTE]: после asset’ов
- * сначала запрос к API за **новым** URL относительно уже известных [WordImageVariantEntity.fetchSignature],
- * затем fallback на сохранённые файлы. Не связано с [ru.techlabhub.speechrehab.domain.model.TrainingMode].
+ * [ImageRotationMode.PREFER_NEW_REMOTE] / [ImageRotationMode.ALWAYS_TRY_NEW_REMOTE]:
+ * после пропуска кэша (см. ниже) запрос к API за **новым** URL относительно [WordImageVariantEntity.fetchSignature],
+ * затем fallback на сохранённые файлы и в конце — **встроенный asset**, если remote не дал нового кандидата.
+ *
+ * Важно: при активной «ротации remote» **нельзя** сразу возвращать bundled — иначе API-ветка никогда
+ * не выполняется для слов с картинкой из assets.
  */
 @Singleton
 class OfflineFirstImageResolver @Inject constructor(
@@ -50,35 +53,61 @@ class OfflineFirstImageResolver @Inject constructor(
         val term = word.text.trim()
         if (term.isEmpty()) return none(word)
 
+        val rotationFetchAllowed = remoteRotationFetchAllowed(prefs)
         val tryNewRemoteBeforeCache =
             fetchPolicy == ImageFetchPolicy.NORMAL &&
                 prefs.imageRotationMode != ImageRotationMode.REUSE_LOCAL_FIRST &&
-                remoteRotationFetchAllowed(prefs)
+                rotationFetchAllowed
+
+        if (!rotationFetchAllowed &&
+            prefs.imageRotationMode != ImageRotationMode.REUSE_LOCAL_FIRST &&
+            fetchPolicy == ImageFetchPolicy.NORMAL
+        ) {
+            Timber.i(
+                "ImageResolve: rotation remote blocked preferred=%s online=%s arasaac=%s pixabay=%s pexels=%s online=%s wifi=%s",
+                prefs.preferredImageMode.name,
+                prefs.onlineImageFetchingMode.name,
+                prefs.arasaacEnabled,
+                prefs.pixabayEnabled,
+                prefs.pexelsEnabled,
+                network.isOnline(),
+                network.isWifi(),
+            )
+        }
 
         Timber.d(
-            "ImageResolve: wordId=%d text=%s rotation=%s tryNewRemoteFirst=%s policy=%s",
+            "ImageResolve: start wordId=%d text=%s fetchPolicy=%s rotation=%s tryNewRemoteFirst=%s preferred=%s online=%s refreshRemoteWhenNoLocal=%s rotationFetchAllowed=%s",
             word.id,
             term,
+            fetchPolicy.name,
             prefs.imageRotationMode.name,
             tryNewRemoteBeforeCache,
-            fetchPolicy.name,
+            prefs.preferredImageMode.name,
+            prefs.onlineImageFetchingMode.name,
+            prefs.refreshRemoteWhenNoLocalImage,
+            rotationFetchAllowed,
         )
 
         val localOrder = localSteps(prefs.preferredImageMode)
         for (step in localOrder) {
             when (step) {
                 LocalImageStep.BUNDLED -> {
-                    val uri = bundled.tryAssetUri(word)
-                    if (uri != null) {
-                        Timber.d("ImageResolve: bundled wordId=%d", word.id)
-                        return ImageCard(
-                            word = word,
-                            imageUri = uri,
-                            remoteUrl = null,
-                            source = ImageSource.BUNDLED,
-                            fromOfflineCache = true,
-                            wordImageVariantId = null,
-                        )
+                    // Приоритет «новая картинка из сети»: не отдаём bundled до попытки remote + fallback кэша.
+                    if (tryNewRemoteBeforeCache) {
+                        Timber.d("ImageResolve: skip bundled (rotation new-remote-first) wordId=%d", word.id)
+                    } else {
+                        val uri = bundled.tryAssetUri(word)
+                        if (uri != null) {
+                            Timber.d("ImageResolve: bundled wordId=%d", word.id)
+                            return ImageCard(
+                                word = word,
+                                imageUri = uri,
+                                remoteUrl = null,
+                                source = ImageSource.BUNDLED,
+                                fromOfflineCache = true,
+                                wordImageVariantId = null,
+                            )
+                        }
                     }
                 }
                 LocalImageStep.CACHE -> {
@@ -86,7 +115,7 @@ class OfflineFirstImageResolver @Inject constructor(
                         val hit = cached.tryLoadCached(word.id)
                         if (hit != null) {
                             Timber.d(
-                                "ImageResolve: reuse local variantId=%d localCandidatesReadable=yes",
+                                "ImageResolve: reuse local variantId=%d",
                                 hit.variantId,
                             )
                             return cardFromCachedHit(word, hit)
@@ -98,15 +127,27 @@ class OfflineFirstImageResolver @Inject constructor(
 
         val rows = variantDao.listForWord(word.id)
         val knownSignatures = variantDao.fetchSignaturesForWord(word.id).toSet()
+        val shownCount = rows.count { it.wasShown }
         Timber.d(
-            "ImageResolve: dbRows=%d knownSignatures=%d",
+            "ImageResolve: db variants total=%d wasShown=%d knownSignatures=%d",
             rows.size,
+            shownCount,
             knownSignatures.size,
         )
 
         if (tryNewRemoteBeforeCache) {
+            Timber.i(
+                "ImageResolve: rotation remote attempt started wordId=%d mode=%s",
+                word.id,
+                prefs.imageRotationMode.name,
+            )
             val remoteCandidates = collectRemoteCandidates(term, prefs)
-            Timber.d("ImageResolve: remoteCandidatesCount=%d (new-first)", remoteCandidates.size)
+            val newBySig = remoteCandidates.count { it.fetchSignature() !in knownSignatures }
+            Timber.d(
+                "ImageResolve: remote candidates total=%d notYetInDb(newBySignature)=%d",
+                remoteCandidates.size,
+                newBySig,
+            )
             val newCard =
                 downloadFirstNewCandidate(
                     word = word,
@@ -115,41 +156,69 @@ class OfflineFirstImageResolver @Inject constructor(
                 )
             if (newCard != null) {
                 Timber.i(
-                    "ImageResolve: chose NEW remote variantId=%s source=%s",
+                    "ImageResolve: chose NEW remote variantId=%s source=%s uriPrefix=%s",
                     newCard.wordImageVariantId,
                     newCard.source.name,
+                    newCard.imageUri?.take(48) ?: newCard.remoteUrl?.take(48) ?: "null",
                 )
                 return newCard
             }
-            Timber.i("ImageResolve: no new remote — fallback local")
+            Timber.i("ImageResolve: no new remote candidates — fallback local cache wordId=%d", word.id)
             val hit = cached.tryLoadCached(word.id)
             if (hit != null) {
                 Timber.d("ImageResolve: fallback local variantId=%d", hit.variantId)
                 return cardFromCachedHit(word, hit)
             }
+            val bundleUri = bundled.tryAssetUri(word)
+            if (bundleUri != null) {
+                Timber.i("ImageResolve: fallback bundled after rotation miss wordId=%d", word.id)
+                return ImageCard(
+                    word = word,
+                    imageUri = bundleUri,
+                    remoteUrl = null,
+                    source = ImageSource.BUNDLED,
+                    fromOfflineCache = true,
+                    wordImageVariantId = null,
+                )
+            }
+            Timber.w("ImageResolve: no image after rotation (no remote, no cache, no bundled) wordId=%d", word.id)
             return none(word)
         }
 
         if (!remoteAllowedAfterLocalMiss(prefs)) {
-            Timber.d("ImageResolve: remote blocked after local miss")
+            Timber.d("ImageResolve: remote blocked after local miss (classic path)")
             return none(word)
         }
 
         val remoteCandidates = collectRemoteCandidates(term, prefs)
-        Timber.d("ImageResolve: remoteCandidatesCount=%d (classic)", remoteCandidates.size)
+        val newBySig = remoteCandidates.count { it.fetchSignature() !in knownSignatures }
+        Timber.d(
+            "ImageResolve: classic remote total=%d newBySignature=%d",
+            remoteCandidates.size,
+            newBySig,
+        )
         val newCard =
             downloadFirstNewCandidate(
                 word = word,
                 knownSignatures = knownSignatures,
                 candidates = remoteCandidates,
             )
-        if (newCard != null) return newCard
-        Timber.w("ImageResolve: no image wordId=%d", word.id)
+        if (newCard != null) {
+            Timber.i(
+                "ImageResolve: classic chose remote variantId=%s source=%s",
+                newCard.wordImageVariantId,
+                newCard.source.name,
+            )
+            return newCard
+        }
+        Timber.w("ImageResolve: no image wordId=%d (classic path)", word.id)
         return none(word)
     }
 
     suspend fun markVariantShown(variantId: Long) {
-        variantDao.markShown(variantId, System.currentTimeMillis())
+        val now = System.currentTimeMillis()
+        variantDao.markShown(variantId, now)
+        Timber.d("ImageResolve: markVariantShown variantId=%d lastShownAtEpochMillis=%d", variantId, now)
     }
 
     private suspend fun downloadFirstNewCandidate(
@@ -160,13 +229,20 @@ class OfflineFirstImageResolver @Inject constructor(
         val fresh =
             RemoteImageCandidatePicker.firstUnknownCandidate(candidates, knownSignatures)
                 ?: run {
-                    Timber.d("ImageResolve: no unknown candidate (empty or all known)")
+                    Timber.d("ImageResolve: firstUnknownCandidate=null (empty list or all signatures known)")
                     return null
                 }
+        val sig = fresh.fetchSignature()
+        Timber.d(
+            "ImageResolve: picked unknown candidate source=%s sig=%s urlPrefix=%s",
+            fresh.source.name,
+            sig,
+            fresh.imageUrl.take(64),
+        )
         val file = cacheStore.fileForWord(word.id, fresh.imageUrl)
         val ok = cacheStore.downloadToFile(fresh.imageUrl, file)
         if (!ok) {
-            Timber.w("ImageResolve: download failed, return remote URL without variant")
+            Timber.w("ImageResolve: download failed — returning remote URL without DB variant urlPrefix=%s", fresh.imageUrl.take(64))
             return ImageCard(
                 word = word,
                 imageUri = fresh.imageUrl,
@@ -183,12 +259,18 @@ class OfflineFirstImageResolver @Inject constructor(
                 remoteUrl = fresh.imageUrl,
                 localFilePath = file.absolutePath,
                 sourceName = fresh.source.name,
-                fetchSignature = fresh.fetchSignature(),
+                fetchSignature = sig,
                 wasShown = false,
                 lastShownAtEpochMillis = 0L,
                 createdAtEpochMillis = now,
             )
         val id = variantDao.insertOrExistingId(entity)
+        Timber.i(
+            "ImageResolve: saved word_image_variant id=%d wordId=%d sig=%s",
+            id,
+            word.id,
+            sig,
+        )
         return ImageCard(
             word = word,
             imageUri = file.absolutePath,
@@ -204,11 +286,17 @@ class OfflineFirstImageResolver @Inject constructor(
         prefs: UserTrainingPreferences,
     ): List<RemoteImageCandidate> {
         val maxPer = 15
-        return buildList {
-            if (prefs.arasaacEnabled) addAll(arasaac.fetchImageCandidates(term, maxPer))
-            if (prefs.pixabayEnabled) addAll(pixabay.fetchImageCandidates(term, maxPer))
-            if (prefs.pexelsEnabled) addAll(pexels.fetchImageCandidates(term, maxPer))
-        }
+        val a = if (prefs.arasaacEnabled) arasaac.fetchImageCandidates(term, maxPer) else emptyList()
+        val p = if (prefs.pixabayEnabled) pixabay.fetchImageCandidates(term, maxPer) else emptyList()
+        val pe = if (prefs.pexelsEnabled) pexels.fetchImageCandidates(term, maxPer) else emptyList()
+        Timber.d(
+            "ImageResolve: provider raw counts arasaac=%d pixabay=%d pexels=%d (maxPer=%d)",
+            a.size,
+            p.size,
+            pe.size,
+            maxPer,
+        )
+        return buildList { addAll(a); addAll(p); addAll(pe) }
     }
 
     private fun cardFromCachedHit(
@@ -249,6 +337,7 @@ class OfflineFirstImageResolver @Inject constructor(
 
     /**
      * Классическая дозагрузка: только если локально совсем нет и [UserTrainingPreferences.refreshRemoteWhenNoLocalImage].
+     * Не используется, когда уже сработала ветка rotation (там отдельный [ImageRotationRemotePolicy]).
      */
     private fun remoteAllowedAfterLocalMiss(prefs: UserTrainingPreferences): Boolean {
         if (!prefs.refreshRemoteWhenNoLocalImage) {

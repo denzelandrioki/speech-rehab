@@ -89,7 +89,20 @@ class TrainingViewModel @Inject constructor(
         viewModelScope.launch {
             _ui.update { it.copy(loading = true, errorMessage = null, lockedAfterAnswer = false) }
             val prefs = userPreferencesRepository.preferencesFlow.first()
-            Timber.d("TrainingScreen: loadNextCard trainingMode=%s", prefs.trainingMode.name)
+            Timber.d(
+                "Preferences loaded: imageRotationMode=%s preferredImageMode=%s onlineImageFetchingMode=%s refreshRemoteWhenNoLocalImage=%s",
+                prefs.imageRotationMode.name,
+                prefs.preferredImageMode.name,
+                prefs.onlineImageFetchingMode.name,
+                prefs.refreshRemoteWhenNoLocalImage,
+            )
+            Timber.d(
+                "TrainingScreen: loadNextCard trainingMode=%s imageRotation=%s preferredImage=%s onlineFetching=%s",
+                prefs.trainingMode.name,
+                prefs.imageRotationMode.name,
+                prefs.preferredImageMode.name,
+                prefs.onlineImageFetchingMode.name,
+            )
             _ui.update {
                 it.copy(
                     showWordHint = prefs.showWordHint,
